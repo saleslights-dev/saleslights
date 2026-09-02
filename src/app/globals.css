@@ -3701,3 +3701,79 @@ html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
    the root context, the whole header lost, panel included. Raising a child was
    never going to work; the header itself has to clear the scrim. */
 .sl-header.is-menu { z-index: 10; }
+
+/* ── Founder: centre the stage and even out the gutters ──────────────
+   The stage carried `width: 100%` together with `margin: 0 -46px`. The negative
+   margin pulls the left edge out to the page edge, but an explicit width:100%
+   means the right edge cannot follow — so the box measured 0..1802 inside an
+   1894 viewport and the ENTIRE composition sat 46px left of centre, with 92px
+   of dead navy banked up on the right. Every gap on the page inherited that
+   error, which is why nudging the portrait never fixed it.
+
+   Widening the stage by the same 92px it was short lets it span the full page,
+   and the three zones can then be spaced deliberately: equal 46px margins, the
+   portrait tucked against the text column it crosses, and one gutter of about
+   80px before the card. */
+@media (min-width: 821px) {
+  .sl-stage {
+    width: calc(100% + 92px);
+    margin: 0 -46px;
+  }
+
+  /* Pulled left so it sits against the type it overlaps rather than stranding
+     a band of empty ground between them. */
+  .sl-figure { left: 21.5%; }
+
+  /* Wider, and held off the page edge by the same margin as the text column on
+     the other side, so the two sides of the page balance. */
+  .sl-ledger {
+    right: 46px;
+    width: 50%;
+  }
+}
+
+/* Correction: a percentage-width card cannot hold a gap against this portrait.
+
+   The figure is sized by HEIGHT (99% of the stage), so its width is a function
+   of the viewport's height, not its width. On a shorter, narrower screen it
+   grows proportionally wider — at 1894x780 its right edge sits at 43% of the
+   page, at 1440x860 it reaches 54%. A card at a fixed 50% therefore cleared it
+   on one screen and covered it by 105px on the other, and because the card
+   sits at z-index 3 above the figure at 2, it simply painted over his shoulder.
+
+   So the card is bounded on BOTH edges — it starts at the half-way line and
+   ends at the page margin — and the portrait is capped so it can never reach
+   that line. The gutter is then guaranteed by construction rather than by a
+   number that happens to work at one size. */
+@media (min-width: 821px) {
+  .sl-ledger {
+    left: 50%;
+    right: 46px;
+    width: auto;
+  }
+
+  /* Stops 70px short of the card's edge, whatever the viewport does. */
+  .sl-figure { max-width: calc(28.5vw - 70px); }
+
+  /* contain, so capping the width scales the portrait down instead of
+     squashing it; anchored to the bottom so he keeps standing on the floor. */
+  .sl-figure img {
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+  }
+}
+
+/* One gutter at every width, derived rather than guessed.
+
+   The card starts at 47% and the portrait is capped at (47 - 21.5)vw minus the
+   gutter, so the two constants are locked together: whatever the viewport does,
+   the portrait's right edge lands exactly 70px short of the card. Change one
+   number and the other has to move with it, which is the point — the previous
+   pair only agreed at a single screen size. */
+@media (min-width: 821px) {
+  .sl-ledger { left: 47%; }
+  .sl-figure { max-width: calc(25.5vw - 70px); }
+}
