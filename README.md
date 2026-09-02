@@ -1,90 +1,135 @@
+<div align="center">
+
 # Saleslights
 
-Next.js (App Router, JSX, no TypeScript) rebuild of the Saleslights single-screen
-site — same layout, type, colours, motion and copy as the original HTML.
+**A New York growth consultancy for teams that need pipeline, not advice.**
+Marketing site: one screen, five views, no scrolling on desktop.
 
-No server, no API routes, no data fetching: `next build` emits a fully static
-site to `out/` that can be dropped on any static host (Vercel, Netlify, S3,
-GitHub Pages, nginx).
+[![Live](https://img.shields.io/badge/live-saleslights.com-f5821f)](https://saleslights.com)
+![Next](https://img.shields.io/badge/next-15.4-black)
+![React](https://img.shields.io/badge/react-19-61dafb)
+![Static](https://img.shields.io/badge/output-static%20export-brightgreen)
 
-## Run
+</div>
+
+---
+
+## What this is
+
+A fully static marketing site. `next build` emits `./out`, servable from any
+CDN or file host. **No server, no API routes, no database, no data fetching, and
+no environment variables at all** — which is why this repository can safely be
+public.
+
+The five views (Home, Founder, Services, Studio, Contact) are **one document**
+with hash routing, not five pages. On desktop the page is a fixed non-scrolling
+viewport sized to fit exactly once; below 820px it becomes an ordinary scrolling
+document.
+
+---
+
+## Running it locally
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev      # :3000
+npm run build    # emits ./out
 ```
+
+There is nothing to configure. No `.env` file exists or is needed.
+
+---
+
+## Repository layout
+
+```
+saleslights/
+├── src/
+│   ├── app/
+│   │   ├── layout.js            metadata, JSON-LD, the deep-link boot script
+│   │   ├── globals.css          the whole design system
+│   │   ├── icon.svg             favicon
+│   │   ├── opengraph-image.js   the share card, generated at build
+│   │   ├── robots.js  sitemap.js
+│   └── components/
+│       ├── SalesLights.js       every view, the router, the pointer loop
+│       ├── SplitHeadline.js     word-split headline animation
+│       ├── useLogoSwapper.js    the rotating client strip
+│       └── data.js              all copy, tabs, brands, founder bio
+└── public/                      brand marks, portraits, hero video
+```
+
+**`data.js` is where the words live.** Copy changes almost never need a
+component touched.
+
+---
+
+## Deploying
 
 ```bash
-npm run build      # static export -> ./out
-npm run start      # serve ./out locally
+ssh root@2.25.162.218 'bash /root/deploy-saleslights-site.sh'
 ```
 
-## Structure
+No GitHub Action — this one is deployed by hand. The script pulls `main`,
+builds, and swaps the output, keeping the previous build at
+`/var/www/saleslights-site.prev` for rollback.
 
-```
-public/
-  logo.avif             brand mark (header)
-  nick-krause.png       portrait (Studio)
-  brand/*.png           10 client logos for the rotating strip
-  fonts/*.woff2         Instrument Sans, self-hosted
-src/app/
-  layout.js             <html> shell + metadata
-  globals.css           font faces, base reset, keyframes, all component styles
-  page.js               renders <SalesLights />
-src/components/
-  SalesLights.js        the whole site: nav, four views, intro motion
-  SplitHeadline.js      measures real line breaks and reveals them line by line
-  data.js               copy, services, brand list, external links
-```
+| | |
+|---|---|
+| Host | `2.25.162.218` (Hostinger, shared with Video Funker) |
+| Docroot | `/var/www/saleslights-site` |
+| Build repo | `/opt/saleslights-site` |
+| Staging URL | `srv1725443.hstgr.cloud` (same files, useful for checking a deploy) |
+| SSL | Let's Encrypt, auto-renewing, covers apex and `www` |
 
-## The four views
+> The deploy script still health-checks `app.saleslights.com`, an app that was
+> removed. Every deploy ends with a warning about it. Harmless, worth deleting.
 
-`home`, `services`, `studio`, `contact` live in one screen and swap in place —
-no routing. State is mirrored to the URL hash (`#services`) so a link or a
-refresh lands on the right view. Arrow Left / Right also move between them.
+> [!IMPORTANT]
+> **The server pulls this repo over plain HTTPS with no credentials.** It works
+> only because the repository is public. If it is ever made private, the deploy
+> breaks immediately and the error will not say why — add a deploy key or token
+> at the same time.
 
-## Motion
+---
 
-Everything is CSS-driven except two pieces of measured motion:
+## SEO
 
-- **Home intro.** The headline is measured against `<main>`, parked at its
-  centre with transitions off, held 1.5s, then transitioned back to its column
-  position over 1.05s while the header, footer and body copy fade in behind it.
-  It runs **every time** Home is shown — on load, on refresh, and on every
-  return from another view.
+Handled through Next's metadata API in `layout.js`: title template, canonical,
+Open Graph, Twitter card, and `ProfessionalService` JSON-LD carrying the New York
+address and founder.
 
-  Two details keep it from breaking. The pre-intro state (headline hidden,
-  chrome at `opacity: 0`) ships in the server-rendered HTML, because rendering
-  the headline visible and hiding it after hydration makes it paint in the left
-  column and then jump to centre once JS arrives. And a 400ms timer settles the
-  page outright if the `requestAnimationFrame` chain never runs — frames don't
-  run in a background tab, and a blank hero is far worse than a missed
-  overture.
-- **Headline reveal.** Each rendered line rises out of its own mask, staggered
-  90ms. The lines aren't hardcoded: a hidden word-by-word copy is measured by
-  `offsetTop` and consecutive words sharing a top become a line, so the split
-  stays correct at any width and re-splits on resize. It waits for
-  `document.fonts.ready` — measuring against fallback metrics would break the
-  lines at the wrong words — and stays paused until the intro has parked the
-  headline, so it never rises from the wrong position.
+The **share card is generated at build time** by `opengraph-image.js` as a real
+1200×630 PNG, so the wording lives in the repository and changes in review
+rather than in a design tool.
 
-Below the hero, a hairline and one line of copy close the composition — without
-them the hero floats as a thin band with an unoccupied lower half. The copy is
-verbatim from the Studio view, so it makes no claim the site doesn't already
-make. A short 34px rule marks the client strip as its own band; it is
-deliberately a rule and not a label or an icon, since the strip beneath it is
-already a row of small drawn marks and the site contains no other illustration.
+`robots.js` and `sitemap.js` are emitted as static files. All three routes need
+`export const dynamic = 'force-static'` — `output: export` refuses the entire
+build without it rather than skipping them.
 
-The client strip is a continuous right-to-left marquee. The brand list is
-rendered twice and the track travels `-50%` on a 58s linear loop, so copy two
-lands exactly where copy one began and the seam never shows. Spacing sits on
-each slot as `margin-right` rather than flex `gap` — with `gap` the track
-measures `20 slots + 19 gaps`, which leaves `-50%` half a gap short of a whole
-copy and the loop visibly jumps. Both ends are feathered with a `mask-image`
-gradient, and it pauses on hover.
+**The sitemap lists only the root, on purpose.** This is one document with hash
+routing, so listing `/#founder` and friends would promise pages that return
+identical HTML and earn a duplicate-content discount.
 
-Page changes fade `<main>` out over 560ms, swap the view, then fade back in.
+---
 
-`prefers-reduced-motion` is honoured in both places: a blanket CSS rule
-collapses every duration and delay, and the intro and headline reveal are
-skipped in JS so nothing sits parked waiting for a transition that won't run.
+## Things that will surprise you
+
+**No global `box-sizing: border-box`.** Deliberate, because the approved design
+sizes several elements by content box. Any new element with `width: 100%` plus
+padding must set `box-sizing` itself, or it will run past its container — this
+has already cut a chevron off a menu row.
+
+**The pointer loop writes `transform` every frame** to the studio render and the
+founder portrait. Never put a CSS transition or animation on those elements: two
+writers on one property fight, and the animation wins by pinning the drift at
+zero. Entrance animations ride a wrapper instead.
+
+**The founder claim deliberately passes *under* the portrait.** That crossing is
+the device. Readable text — the eyebrow, the credential chips — must not, so
+they are capped to the clear strip beside it. The portrait is sized by *height*,
+so its width depends on the viewport's height; the card and the cap are locked
+to one shared constant so the gutter holds at every size.
+
+**Deep links do not select a view on load.** Opening `/#founder` directly serves
+Home. The hash only works when a nav link is clicked. Known, unfixed.
