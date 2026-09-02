@@ -61,14 +61,41 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* ── Palette ───────────────────────────────────────────────────────────────── */
+
+/* The rebrand is a ground inversion, not a redraw: every value the cream build
+   used has one counterpart here, so the rules below are untouched apart from
+   the swap. Deep navy rather than mid — the hero footage's own sky sits at
+   #010e2e, and a lighter ground made the join visible. */
+:root {
+  /* The document scrolls below 820px, and a browser that paints classic
+     scrollbars was drawing that one in its default light chrome — a grey bar
+     down the edge of a navy page, most obvious against the flat ground of the
+     loader. This is what tells the browser the page is dark, so the scrollbar
+     is rendered to match instead of being the one light object on the site. */
+  color-scheme: dark;
+
+  --sl-bg: #071831;
+  /* Header, logo strip and footer are one horizontal frame around the hero,
+     so they share a single value. Two different navies read as an accident. */
+  --sl-bar: #0a1d3d;
+  --sl-panel: #0a1d3c;
+  --sl-ink: #ffffff;
+  --sl-body: #b9c8dc;
+  --sl-muted: #94a9c6;
+  --sl-faint: #6f85a4;
+  --sl-rule: rgba(255, 255, 255, .14);
+  --sl-accent: #f5821f;
+}
+
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #eceae4; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--sl-bg); }
 * { box-sizing: border-box; }
-a { color: #171614; text-decoration: none; }
-a:hover { color: #171614; }
+a { color: var(--sl-ink); text-decoration: none; }
+a:hover { color: var(--sl-ink); }
 input, textarea { font: inherit; color: inherit; }
-::selection { background: #171614; color: #eceae4; }
+::selection { background: var(--sl-accent); color: #180b00; }
 
 @keyframes slin { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 @keyframes slrise { from { transform: translate3d(0, 110%, 0); } to { transform: translate3d(0, 0, 0); } }
@@ -97,14 +124,20 @@ input, textarea { font: inherit; color: inherit; }
   width: 1000px;
   height: 1000px;
   margin: -500px 0 0 -500px;
+  /* closest-side, not the default farthest-corner. On a 1000x1000 box the
+     corner is 707px away, so a last stop at 92% lands at 650px — still ~1.5%
+     opaque where the element's flat edge clips it at 500px. Over cream that was
+     invisible; over navy it drew a soft rectangle that followed the pointer.
+     closest-side puts 100% on the edge itself, so the light is fully gone
+     before there is an edge to see. */
   background: radial-gradient(
-    circle,
-    rgba(255, 253, 247, .42) 0%,
-    rgba(255, 253, 247, .30) 20%,
-    rgba(255, 253, 247, .17) 40%,
-    rgba(255, 253, 247, .07) 60%,
-    rgba(255, 253, 247, .02) 78%,
-    rgba(255, 253, 247, 0) 92%
+    circle closest-side,
+    rgba(255, 168, 84, .11) 0%,
+    rgba(255, 168, 84, .08) 22%,
+    rgba(255, 168, 84, .045) 44%,
+    rgba(255, 168, 84, .018) 66%,
+    rgba(255, 168, 84, .006) 84%,
+    rgba(255, 168, 84, 0) 100%
   );
   will-change: transform;
 }
@@ -161,14 +194,14 @@ html[data-cursor='on'] button { cursor: none; }
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: #171614;
+  background: var(--sl-ink);
   transition: transform .38s cubic-bezier(.16, 1, .3, 1);
 }
 .sl-cursor-ring > i {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 1px solid rgba(23, 22, 20, .28);
+  border: 1px solid rgba(255, 255, 255, .34);
   transition: transform .45s cubic-bezier(.16, 1, .3, 1), border-color .35s ease;
 }
 
@@ -181,7 +214,7 @@ html.sl-pointer-on .sl-cursor-ring { opacity: 1; }
 html.sl-pointer-link .sl-cursor-dot > i { transform: scale(.55); }
 html.sl-pointer-link .sl-cursor-ring > i {
   transform: scale(1.18);
-  border-color: rgba(23, 22, 20, .42);
+  border-color: rgba(255, 255, 255, .58);
 }
 
 /* ── Shell ─────────────────────────────────────────────────────────────────── */
@@ -189,8 +222,8 @@ html.sl-pointer-link .sl-cursor-ring > i {
 .sl-root {
   position: fixed;
   inset: 0;
-  background: #eceae4;
-  color: #171614;
+  background: var(--sl-bg);
+  color: var(--sl-ink);
   font-family: 'Instrument Sans', system-ui, sans-serif;
   font-size: 17px;
   line-height: 1.5;
@@ -207,7 +240,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   align-items: center;
   justify-content: space-between;
   padding: 26px 46px;
-  border-bottom: 1px solid #d5d2c8;
+  border-bottom: 1px solid var(--sl-rule);
 }
 
 .sl-brand { display: flex; align-items: center; }
@@ -225,13 +258,13 @@ html.sl-pointer-link .sl-cursor-ring > i {
 .sl-nav a {
   font-size: 15px;
   letter-spacing: -.005em;
-  color: #6d6a60;
+  color: var(--sl-muted);
   padding-bottom: 3px;
   border-bottom: 1px solid transparent;
   transition: color .2s ease, border-color .2s ease;
 }
-.sl-nav a.is-active { color: #171614; border-bottom-color: #171614; }
-.sl-nav a:hover { color: #171614; }
+.sl-nav a.is-active { color: var(--sl-ink); border-bottom-color: var(--sl-ink); }
+.sl-nav a:hover { color: var(--sl-ink); }
 
 .sl-main {
   position: relative;
@@ -271,7 +304,11 @@ html.sl-pointer-link .sl-cursor-ring > i {
      lines up with the logo above it rather than its bounding box. */
   margin-left: -.03em;
   font-weight: 400;
-  font-size: clamp(32px, 4.4vw, 72px);
+  /* Floor raised from 32px: below 727px the 4.4vw term never wins, so the floor
+     alone set the size for every phone and tablet — and at 32px the hero was
+     1.67x the lede beside it, against 3.34x on desktop. That is what made the
+     phone read flat. 36px also meets the ≤560px rule below with no step. */
+  font-size: clamp(36px, 4.4vw, 72px);
   line-height: 1.04;
   letter-spacing: -.035em;
   max-width: 14ch;
@@ -337,7 +374,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   margin: 0;
   font-size: 19px;
   line-height: 1.5;
-  color: #4b4941;
+  color: var(--sl-body);
   text-wrap: pretty;
 }
 
@@ -364,7 +401,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #171614;
+  background: var(--sl-ink);
   transition: transform .38s cubic-bezier(.16, 1, .3, 1);
 }
 .sl-cta::after { transform: scaleX(1); transform-origin: right; }
@@ -378,7 +415,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   position: relative;
   display: inline-block;
   font-size: 16px;
-  color: #8f8b7e;
+  color: var(--sl-faint);
   padding-bottom: 5px;
   transition: color .22s ease;
 }
@@ -389,18 +426,18 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #171614;
+  background: var(--sl-ink);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform .38s cubic-bezier(.16, 1, .3, 1);
 }
-.sl-cta-sub:hover { color: #171614; }
+.sl-cta-sub:hover { color: var(--sl-ink); }
 .sl-cta-sub:hover::after { transform: scaleX(1); }
 
 
 /* ── Services ──────────────────────────────────────────────────────────────── */
 
-.sl-services-list { border-top: 1px solid #d5d2c8; }
+.sl-services-list { border-top: 1px solid var(--sl-rule); }
 
 /* A <button>, not a <div>: the rows are a choice, so they need a tab stop,
    Enter/Space, and to be announced as pressable. Visually identical. */
@@ -414,19 +451,19 @@ html.sl-pointer-link .sl-cursor-ring > i {
   background: none;
   border: 0;
   border-radius: 0;
-  border-bottom: 1px solid #d5d2c8;
+  border-bottom: 1px solid var(--sl-rule);
   font: inherit;
   text-align: left;
   appearance: none;
   cursor: pointer;
-  color: #8a8679;
+  color: var(--sl-faint);
   transition: color .3s cubic-bezier(.16, 1, .3, 1);
 }
-.sl-service.is-active { color: #171614; }
+.sl-service.is-active { color: var(--sl-ink); }
 
 /* The selected row's rule inks in from the left. This is the `slwipe` keyframe
    the original author wrote and never used — the intent was already here.
-   One step up from the resting hairline, not a jump to ink: #d5d2c8 to near
+   One step up from the resting hairline, not a jump to ink: var(--sl-rule) to near
    black is too big a leap and reads as a heavy bar rather than an indicator. */
 .sl-service::after {
   content: '';
@@ -435,7 +472,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: #8f8b7e;
+  background: var(--sl-faint);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform .55s cubic-bezier(.16, 1, .3, 1);
@@ -450,12 +487,12 @@ html.sl-pointer-link .sl-cursor-ring > i {
 
 .sl-service-num {
   font-size: 13px;
-  color: #8f8b7e;
+  color: var(--sl-faint);
   width: 22px;
   flex: 0 0 auto;
   transition: color .3s cubic-bezier(.16, 1, .3, 1), transform .45s cubic-bezier(.16, 1, .3, 1);
 }
-.sl-service.is-active .sl-service-num { color: #171614; }
+.sl-service.is-active .sl-service-num { color: var(--sl-ink); }
 /* Weight stays at 400 for every row. The site is uniformly 400, so bumping the
    selected title to 500 read as heavier and darker than anything else on the
    page — selection is carried by colour and the indent instead. */
@@ -495,7 +532,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   top: 0;
   height: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   transform-origin: left;
   animation: slwipe .7s cubic-bezier(.16, 1, .3, 1) both;
 }
@@ -503,7 +540,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   position: relative;
   padding: clamp(7px, 1.3vh, 13px) 0;
   font-size: 16px;
-  color: #4b4941;
+  color: var(--sl-body);
 }
 .sl-point::after {
   content: '';
@@ -512,7 +549,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   transform-origin: left;
   animation: slwipe .7s cubic-bezier(.16, 1, .3, 1) both;
 }
@@ -536,7 +573,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #171614;
+  background: var(--sl-ink);
   transition: transform .38s cubic-bezier(.16, 1, .3, 1);
 }
 .sl-service-cta::after { transform: scaleX(1); transform-origin: right; }
@@ -562,12 +599,12 @@ html.sl-pointer-link .sl-cursor-ring > i {
    and finally uses the slwipe keyframe the original author left unwired. */
 .sl-h2-rule {
   height: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   transform-origin: left;
   animation: slwipe .9s .28s cubic-bezier(.16, 1, .3, 1) both;
 }
 
-.sl-studio-p { margin: 0; color: #4b4941; text-wrap: pretty; }
+.sl-studio-p { margin: 0; color: var(--sl-body); text-wrap: pretty; }
 .sl-studio-p-1 { animation: slin .85s .34s cubic-bezier(.16, 1, .3, 1) both; }
 .sl-studio-p-2 { animation: slin .85s .46s cubic-bezier(.16, 1, .3, 1) both; }
 
@@ -634,7 +671,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
    the opposite column so both sides share one horizontal structure. */
 .sl-person-rule {
   height: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   margin-bottom: 15px;
   transform-origin: left;
   animation: slwipe .9s .68s cubic-bezier(.16, 1, .3, 1) both;
@@ -651,7 +688,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   animation: slin .8s .84s cubic-bezier(.16, 1, .3, 1) both;
   margin-top: 6px;
   font-size: 15px;
-  color: #6d6a60;
+  color: var(--sl-muted);
 }
 .sl-person-link {
   animation: slin .8s .92s cubic-bezier(.16, 1, .3, 1) both;
@@ -670,7 +707,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #171614;
+  background: var(--sl-ink);
   transition: transform .5s cubic-bezier(.16, 1, .3, 1);
 }
 .sl-person-link::after { transform: scaleX(1); transform-origin: right; }
@@ -687,7 +724,13 @@ html.sl-pointer-link .sl-cursor-ring > i {
   position: relative;
   margin: 0;
   font-weight: 400;
-  font-size: clamp(28px, 3.2vw, 48px);
+  /* 3.2vw does not overtake a 28px floor until the viewport is 875px wide, so
+     every phone and tablet got the floor and nothing else — and 28px is only
+     2px above the booking card's own title, which left the page's headline
+     reading as a peer of something inside the card below it. This is the same
+     range expressed as a line that actually moves: ~34px on a phone, ~46px at
+     1440, and it never steps at a breakpoint. */
+  font-size: clamp(24px, calc(20.3px + 1.79vw), 48px);
   line-height: 1.08;
   letter-spacing: -.03em;
   max-width: 15ch;
@@ -695,10 +738,27 @@ html.sl-pointer-link .sl-cursor-ring > i {
 }
 /* Studio gets this spacing from its flex-column gap; Contact has none. */
 .sl-contact-h2 + .sl-h2-rule { margin-top: 26px; }
+
+/* The lede was a flat 19px at every width. On desktop that sits under a 63px
+   headline and reads as support; on a phone it sits under a 33px one and reads
+   as a peer, which is most of why the hero stopped looking like a hero. 17px is
+   the site's own base size, so this is the body copy returning to it rather
+   than a new value. */
+@media (max-width: 820px) {
+  .sl-lede { font-size: 17px; }
+}
+
+/* On a phone the column starts hard under the nav — 30px, against the 26px the
+   blocks below it are spaced by. A title needs more air above it than the
+   paragraphs under it have between them, or it stops reading as a title.
+   Scoped with :has() rather than a new class, the same way Services is. */
+@media (max-width: 820px) {
+  .sl-grid:has(.sl-contact-h2) { padding-top: clamp(12px, 3.5vw, 26px); }
+}
 .sl-contact-p {
   animation: slin .85s .18s cubic-bezier(.16, 1, .3, 1) both;
   margin: 26px 0 0;
-  color: #4b4941;
+  color: var(--sl-body);
   max-width: 44ch;
   font-size: 17px;
   text-wrap: pretty;
@@ -708,7 +768,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
 /* Inked, not outlined. The site has no cards anywhere — it is hairlines and
    type throughout — so a pale bordered rectangle was the one foreign object on
    it, and a fill barely off the page colour read as undecided rather than
-   quiet. Solid #171614 is the ink already in the palette, and it gives Contact
+   quiet. Solid var(--sl-ink) is the ink already in the palette, and it gives Contact
    the single focal point the view was missing. */
 /* A light travels the card's edge, continuously, whether or not anyone is
    touching it. The frame is a 1px ring; a conic gradient rotates behind it and
@@ -718,23 +778,24 @@ html.sl-pointer-link .sl-cursor-ring > i {
 .sl-book-frame {
   position: relative;
   padding: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   overflow: hidden;
   animation: slin .85s .3s cubic-bezier(.16, 1, .3, 1) both;
 }
+/* Same diagonal rule as the Services rim — see that comment. */
 .sl-book-beam {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 165%;
+  width: 175%;
   aspect-ratio: 1;
   pointer-events: none;
   background: conic-gradient(
     from 0deg,
     transparent 0deg 248deg,
-    rgba(23, 22, 20, .30) 288deg,
-    rgba(23, 22, 20, .78) 310deg,
-    rgba(23, 22, 20, .30) 332deg,
+    rgba(245, 130, 31, .32) 288deg,
+    rgba(245, 130, 31, .88) 310deg,
+    rgba(245, 130, 31, .32) 332deg,
     transparent 356deg 360deg
   );
   animation: slbeam 7s linear infinite;
@@ -747,7 +808,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
 
 .sl-book {
   position: relative;
-  background: #f6f5f1;
+  background: var(--sl-panel);
   padding: clamp(26px, 4vh, 44px) clamp(24px, 2.4vw, 36px);
 }
 /* Wording is the real meeting: the brand, the host's own name and role, and
@@ -756,7 +817,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   animation: slin .7s .38s cubic-bezier(.16, 1, .3, 1) both;
   margin: 0 0 clamp(16px, 2.6vh, 26px);
   font-size: 14px;
-  color: #8f8b7e;
+  color: var(--sl-faint);
 }
 .sl-book-title {
   animation: slin .7s .44s cubic-bezier(.16, 1, .3, 1) both;
@@ -764,13 +825,13 @@ html.sl-pointer-link .sl-cursor-ring > i {
   font-size: clamp(26px, 2.5vw, 38px);
   letter-spacing: -.03em;
   line-height: 1.08;
-  color: #171614;
+  color: var(--sl-ink);
 }
 .sl-book-role {
   animation: slin .7s .5s cubic-bezier(.16, 1, .3, 1) both;
   margin: 9px 0 clamp(22px, 3.2vh, 34px);
   font-size: 15px;
-  color: #6d6a60;
+  color: var(--sl-muted);
 }
 
 /* Each row's rule draws itself in under the row as the row arrives, the same
@@ -785,10 +846,10 @@ html.sl-pointer-link .sl-cursor-ring > i {
   font-size: 16px;
   animation: slin .7s cubic-bezier(.16, 1, .3, 1) both;
 }
-.sl-book-row span { color: #8f8b7e; }
+.sl-book-row span { color: var(--sl-faint); }
 .sl-book-row b {
   font-weight: 400;
-  color: #171614;
+  color: var(--sl-ink);
   letter-spacing: -.01em;
   line-height: 1.35;
 }
@@ -796,7 +857,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   animation: slin .7s .82s cubic-bezier(.16, 1, .3, 1) both;
   margin: clamp(14px, 2.2vh, 20px) 0 0;
   font-size: 14px;
-  color: #8f8b7e;
+  color: var(--sl-faint);
   max-width: 34ch;
   line-height: 1.5;
 }
@@ -808,7 +869,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   top: 0;
   height: 1px;
-  background: #d5d2c8;
+  background: var(--sl-rule);
   transform-origin: left;
   animation: slwipe .8s cubic-bezier(.16, 1, .3, 1) both;
 }
@@ -839,7 +900,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: #171614;
+  background: var(--sl-ink);
   transition: transform .38s cubic-bezier(.16, 1, .3, 1);
 }
 .sl-book-cta::after { transform: scaleX(1); transform-origin: right; }
@@ -893,18 +954,18 @@ html.sl-pointer-link .sl-cursor-ring > i {
   align-items: center;
   justify-content: space-between;
   padding: 20px 46px;
-  border-top: 1px solid #d5d2c8;
+  border-top: 1px solid var(--sl-rule);
   font-size: 14px;
-  color: #8f8b7e;
+  color: var(--sl-faint);
 }
 .sl-footer-links { display: flex; align-items: center; gap: 22px; }
-.sl-footer a { color: #8f8b7e; }
-.sl-footer a:hover { color: #171614; }
+.sl-footer a { color: var(--sl-faint); }
+.sl-footer a:hover { color: var(--sl-ink); }
 
 /* ── Keyboard focus ────────────────────────────────────────────────────────── */
 
 :focus-visible {
-  outline: 1px solid #171614;
+  outline: 1px solid var(--sl-ink);
   outline-offset: 4px;
 }
 .sl-service:focus-visible { outline-offset: -1px; }
@@ -924,7 +985,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
 }
 
 /* The cursor is inked, so on an inked surface it would disappear. */
-html.sl-pointer-invert .sl-cursor-dot > i { background: #eceae4; }
+html.sl-pointer-invert .sl-cursor-dot > i { background: var(--sl-bg); }
 html.sl-pointer-invert .sl-cursor-ring > i { border-color: rgba(236, 234, 228, .45); }
 html.sl-pointer-invert.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(236, 234, 228, .8); }
 
@@ -1025,3 +1086,1941 @@ html.sl-pointer-invert.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(
      here — it only zooms into the portrait and crops the shoulders away. */
   .sl-portrait { left: 0; top: 0; width: 100%; height: 100%; }
 }
+
+/* ── Dark rebrand ──────────────────────────────────────────────────────────── */
+
+/* Header and the bottom band step away from the hero ground so the page reads
+   as three horizontal registers, the way the brand mockup does. */
+.sl-header { background: var(--sl-bar); }
+.sl-logos { background: var(--sl-bar); border-top: 1px solid var(--sl-rule); }
+.sl-footer { background: var(--sl-bar); }
+
+/* The mark ships blue-on-white. logo-light.png is the same artwork with the
+   blue half recoloured, so it needs no filter and keeps its own orange —
+   the cream build's grayscale-and-multiply would have erased it here. */
+.sl-brand img { filter: none; mix-blend-mode: normal; }
+.sl-brand:hover img { filter: brightness(1.12); }
+
+/* On cream, ink carried emphasis. On navy the orange does — every mark that
+   was near-black to signal "this is the live one" becomes the accent. */
+.sl-nav a.is-active { color: var(--sl-accent); border-bottom-color: var(--sl-accent); }
+.sl-service.is-active .sl-service-num { color: var(--sl-accent); }
+.sl-book-brand { color: var(--sl-accent); }
+.sl-cta-sub::after,
+.sl-service-cta::before, .sl-service-cta::after,
+.sl-person-link::before, .sl-person-link::after,
+.sl-book-cta::before, .sl-book-cta::after { background: var(--sl-accent); }
+:focus-visible { outline-color: var(--sl-accent); }
+
+/* The primary becomes the pill from the mockup. Its two sweep bars are kept
+   exactly as they were — same transforms, same origins, same .38s curve, same
+   .14s hand-off — they just run as a light wash across the pill now instead of
+   as an underline beneath it. Nothing about the motion changed. */
+.sl-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sl-accent);
+  color: #180b00;
+}
+.sl-cta:hover { color: #180b00; }
+/* The resting bar carries no colour. It still runs — same transform, same
+   origin, same curve — but an .18 white wash sitting on the pill at rest made
+   it a washed-out orange instead of the brand's, and retracting it on hover
+   read as the button changing colour under the cursor. Only the incoming bar
+   is inked now, so the pill rests at exactly var(--sl-accent) and the sweep
+   arrives on hover instead of leaving. */
+.sl-cta::after { top: 0; height: auto; background: transparent; }
+.sl-cta::before { top: 0; height: auto; background: rgba(255, 255, 255, .16); }
+.sl-cta-row { align-items: center; }
+
+/* Black noise over a dark ground stops being stock and starts being dirt. */
+.sl-bg-grain { opacity: .12; }
+
+/* Inverted surfaces are now the light ones, so this flips with the theme. */
+html.sl-pointer-invert .sl-cursor-dot > i { background: var(--sl-bg); }
+html.sl-pointer-invert .sl-cursor-ring > i { border-color: rgba(7, 24, 49, .45); }
+html.sl-pointer-invert.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(7, 24, 49, .8); }
+
+/* ── Home hero ─────────────────────────────────────────────────────────────── */
+
+/* .sl-main already clips, so the loop fills the band between the header and the
+   logo strip and stops there. Height-driven with width auto: the 16:9 frame is
+   never cropped top or bottom, which is what keeps both the spire and the full
+   trail sweep in shot at any viewport. The mask sits on the wrapper rather than
+   the video so the reduced-motion poster inherits the same soft left edge. */
+.sl-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* The dissolve belongs on the footage, not on the wrapper. On the wrapper the
+   gradient is measured across the whole hero, so it fades the layer while the
+   video's own left edge stays a straight cut — and wherever the footage is
+   narrower than the hero, that cut shows as a hard vertical seam. Put it on the
+   video and the gradient is relative to its own box, so the fade always begins
+   exactly at its edge whatever the viewport does.
+   Bottom-aligned at 84% height rather than filling: the frame carries the spire
+   right up to its top edge, so at full height the skyline swallows the hero.
+   Holding it short leaves the band of open sky the brand mockup has. */
+.sl-hero-video,
+.sl-hero-poster {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 84%;
+  width: auto;
+  /* Height-driven so the 16:9 frame is never letterboxed, but capped: on a short
+     or narrow viewport the derived width runs past the hero and the footage
+     swallows the headline column. Past the cap object-fit crops the sides,
+     which costs skyline at the edges and nothing else. */
+  max-width: 62%;
+  min-width: 44%;
+  object-fit: cover;
+  /* Biased right, so the ~34% the cap crops comes mostly off the left. That is
+     where the trails fan out widest, and their far tails are what were smearing
+     through the dissolve as stray diagonals. Cropping them beats fading them.
+     The bias is chosen so the spire still lands near 80% of the hero. */
+  object-position: 70% bottom;
+  /* A short, decisive feather instead of a long dissolve. Spread over half
+     the frame, every bright thing in the image sat at 20-40% somewhere on
+     the left and read as dirt on the background. This is invisible until
+     ~50% of the hero and solid by ~66% — one clean edge, no half-lit zone. */
+  /* Angled, not vertical. The skyline and the trail tails sit in different
+     bands of the frame, so a vertical fade cannot tell them apart — pulling
+     it left to show more buildings drags the trail ends back into the type.
+     At 76deg the reveal edge leans: further left at the top, where there is
+     only skyline and sky, and further right at the bottom, where the trails
+     fan out. More city, same clean left column. */
+  -webkit-mask-image: linear-gradient(76deg, transparent 0 11%, rgba(0, 0, 0, .16) 21%, rgba(0, 0, 0, .58) 32%, #000 43%);
+          mask-image: linear-gradient(76deg, transparent 0 11%, rgba(0, 0, 0, .16) 21%, rgba(0, 0, 0, .58) 32%, #000 43%);
+}
+/* The still sits under the loop permanently, not just for reduced motion.
+   The video layer is dropped whenever the browser decides not to paint it —
+   a backgrounded tab, a decoder it has released, a source that never arrived —
+   and without something beneath it the hero falls back to bare navy. */
+.sl-hero-poster { z-index: 0; }
+.sl-hero-video { z-index: 1; }
+/* Unmasked, so the navy holding the headline is flat rather than a fade of the
+   footage — the mockup's left third is solid ground, not a dimmed photo. */
+.sl-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, var(--sl-bg) 0 16%, rgba(7, 24, 49, .45) 29%, rgba(7, 24, 49, .16) 37%, transparent 45%),
+    linear-gradient(90deg, var(--sl-bg) 0 40%, rgba(7, 24, 49, .55) 50%, rgba(7, 24, 49, .12) 58%, transparent 66%);
+}
+.sl-grid { position: relative; z-index: 1; }
+
+/* Home stacks to one column against the footage, as the mockup does. The intro
+   measures the headline's resting position at runtime, so it still glides back
+   to wherever this puts it — no timing or JS change. */
+.sl-grid-home { grid-template-columns: minmax(0, 1fr); }
+.sl-grid-home .sl-home-copy { max-width: 42ch; }
+
+/* The two phrases the mockup sets in orange. Keyed off the word rather than a
+   line or child index, because the split is measured at runtime — the line a
+   word lands on changes with the viewport, the word does not. */
+.sl-grid-home .sl-word[data-w='good'],
+.sl-grid-home .sl-word[data-w='product'],
+.sl-grid-home .sl-word[data-w='revenue.'] { color: var(--sl-accent); }
+/* Two lines, at every width. Measured, not guessed: "We turn a good product"
+   is 15.22ch and "We turn a good product into" is 17.92ch, so any measure in
+   between breaks after "product" and nowhere else. 16.4ch sits mid-window,
+   with better than a character of slack on both sides. ch is font-relative, so
+   the break survives the whole clamp range without a second breakpoint.
+   The split lands both accent phrases whole — "good product" closes line one,
+   "revenue." closes line two. */
+.sl-grid-home .sl-h1 { max-width: 16.4ch; }
+/* Orange on navy at .62 read as switched off. */
+.sl-logo { opacity: .8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-hero-video { display: none; }
+}
+
+/* Below 820px the document scrolls and .sl-main stops clipping, so the footage
+   cannot stay a backdrop — there is nothing bounding it, and at this width
+   there is no room to set type over an image and keep either legible. It
+   becomes a band under the copy instead, full-bleed, fading up into the ground
+   so it still reads as part of the page rather than a pasted picture. */
+@media (max-width: 820px) {
+  .sl-hero-media {
+    position: relative;
+    inset: auto;
+    order: 2;
+    width: calc(100% + 48px);
+    margin: clamp(22px, 5vw, 34px) -24px 0;
+    height: clamp(190px, 48vw, 300px);
+    overflow: hidden;
+  }
+  .sl-hero-video,
+  .sl-hero-poster {
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    min-width: 0;
+    object-position: 62% bottom;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, .55) 20%, #000 46%);
+            mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, .55) 20%, #000 46%);
+  }
+  /* The horizontal wash is meaningless once the footage is no longer beside
+     the type. */
+  .sl-hero-scrim { display: none; }
+
+  /* No measure override here any more. 16.4ch is in ch, so it is already the
+     same two-line break at phone type as at 72px — overriding it was what put
+     the phone on a different number of lines from the desktop. */
+}
+
+@media (max-width: 560px) {
+  .sl-hero-media { width: calc(100% + 40px); margin-inline: -20px; }
+
+  /* The measure is in ch, so it scales — but a phone can still be narrower than
+     the measure asks for, and then the browser wraps early and the headline is
+     three lines again. "We turn a good product" is 10.14em of text; below about
+     364px the 32px floor wants more width than the screen has. So the type
+     steps down by exactly what is missing and no more: above that width this
+     resolves to the 32px floor and nothing changes. Divisor 11 rather than
+     10.14 keeps a scrollbar's worth of slack in hand. */
+  .sl-grid-home .sl-h1 { font-size: min(36px, calc((100vw - 40px) / 10.5)); }
+}
+
+/* The cream build's cursor was ink on paper. Straight inversion put a hard
+   white dot and ring on the navy, which reads as a stray object rather than a
+   pointer — and the warm field behind it, harmless at 4% over cream, became a
+   visible orange blob dragged around a dark page. Both come down. */
+.sl-cursor-dot > i { background: rgba(255, 255, 255, .82); }
+.sl-cursor-ring > i { border-color: rgba(255, 255, 255, .20); }
+html.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(255, 255, 255, .38); }
+
+/* The warm field that trailed the pointer is gone. It was the one idea carried
+   straight over from the cream build — a soft warm source answering the cursor,
+   which is how a site called Saleslights earns its name — but warm light over
+   navy is a skin-toned wash, not illumination, and at any opacity strong enough
+   to read it dirtied the whole left column. The element and its frame loop stay
+   (the same loop drives the cursor ring and the magnetism, and it costs nothing
+   to keep writing a transform nobody sees), so this is a one-line revert if a
+   cooler version is ever wanted. */
+.sl-bg-glow { display: none; }
+
+/* ── Services ──────────────────────────────────────────────────────────────── */
+
+/* The rows carry an absolutely positioned rule as their active indicator, but
+   nothing here was ever positioned, so it resolved against an ancestor and the
+   indicator never landed under its own row. It does now. */
+.sl-service { position: relative; }
+
+/* Room to breathe, and a gutter on the left for the rail to live in. The list
+   was five tight rows floating in a tall empty field; at this rhythm it holds
+   the column instead of hovering in the middle of it. */
+.sl-service { padding: clamp(12px, 2.4vh, 22px) 0 clamp(12px, 2.4vh, 22px) 18px; }
+
+/* Selection was carried by colour alone, which is nothing to catch the eye when
+   the row under the cursor changes. The rail opens from the row's centre line
+   on the signature curve, so moving down the list reads as a hand-off. */
+.sl-service::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 0;
+  border-radius: 2px;
+  background: var(--sl-accent);
+  box-shadow: 0 0 10px rgba(245, 130, 31, .75);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: height .5s cubic-bezier(.16, 1, .3, 1), opacity .3s ease;
+}
+.sl-service.is-active::before { height: 62%; opacity: 1; }
+
+/* The detail had the same weight as the list, so it read as a second list
+   rather than as the answer to the row you picked. A lit panel gives it the
+   rank, and reuses the ring the Contact card already runs — one language
+   across the site rather than a new idea per page. */
+.sl-service-panel {
+  position: relative;
+  padding: 1px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sl-rule);
+}
+/* The square has to reach the panel's corners, so it is measured against the
+   diagonal, not the width. At 150% it fell short the moment the panel was
+   taller than it was wide and the light died before the corner — 175% clears
+   every desktop ratio. The phone case is far more extreme and is handled at
+   the 560px breakpoint. */
+.sl-service-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 175%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 250deg,
+    rgba(245, 130, 31, .22) 292deg,
+    rgba(245, 130, 31, .80) 312deg,
+    rgba(245, 130, 31, .22) 332deg,
+    transparent 356deg 360deg
+  );
+  animation: slbeam 7s linear infinite;
+  will-change: transform;
+}
+.sl-service-card {
+  position: relative;
+  border-radius: 15px;
+  padding: clamp(20px, 3.4vh, 34px) clamp(20px, 2.2vw, 34px);
+  background: linear-gradient(158deg, #0c2247 0%, #081b38 100%);
+}
+
+/* Marks, not just rules. The bullets were four lines of text separated by
+   hairlines, which is a table, not a list of proofs. */
+.sl-point { padding-left: 20px; }
+.sl-point::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -3px;
+  background: var(--sl-accent);
+  transform: rotate(45deg);
+  opacity: .9;
+}
+
+/* The panel needs a terminus, and the primary on Home is already this shape —
+   same treatment, so the two agree. Both sweep bars keep their transforms and
+   timing; only the resting one is uninked, so the pill sits at the brand orange
+   and the wash arrives on hover instead of leaving. */
+.sl-service-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sl-accent);
+  color: #180b00;
+}
+.sl-service-cta:hover { color: #180b00; }
+.sl-service-cta::after { top: 0; height: auto; background: transparent; }
+.sl-service-cta::before { top: 0; height: auto; background: rgba(255, 255, 255, .16); }
+
+/* Both columns were centred in their own track, so the list floated at a
+   different height from the panel and the section had no shared top line.
+   Aligning them gives the page one horizontal edge to read from. Scoped with
+   :has() rather than a new class — where that isn't supported the layout just
+   stays centred, which is where it was. */
+.sl-grid:has(.sl-services-list) { align-items: start; }
+
+/* The swapper always has one slot mid-fade, so at three slots a third of the
+   phone strip is empty at any given moment and it reads as broken rather than
+   as a cycle. A fourth slot and a smaller floor keeps it looking populated. */
+@media (max-width: 560px) {
+  .sl-logo-slot:nth-child(4) { display: flex; }
+  .sl-logo-slot { width: clamp(52px, 21%, 96px); height: clamp(26px, 4.4vh, 38px); }
+  .sl-logos-inner { gap: 14px; }
+}
+
+/* ── Studio ────────────────────────────────────────────────────────────────── */
+
+/* The render carries more weight than the copy, so it takes the wider track. */
+.sl-grid-studio { align-items: center; grid-template-columns: 1.06fr .94fr; }
+
+.sl-studio-render { position: relative; }
+
+/* Warm bounce under the platform — the same light the render is lit with, so
+   it sits on the page rather than floating above it. Behind the artwork: the
+   image is positioned, so it paints over this. */
+.sl-studio-render::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 78%;
+  height: 32%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(245, 130, 31, .20),
+    rgba(245, 130, 31, .05) 46%,
+    transparent 72%
+  );
+}
+
+/* Entrance on the wrapper, pointer drift on the image — one writer per
+   transform. Run both on the same element and the animation's final keyframe
+   wins and pins the drift at zero. */
+.sl-studio-render-in { animation: slin 1s .08s cubic-bezier(.16, 1, .3, 1) both; }
+.sl-studio-render img {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  height: auto;
+  margin-inline: auto;
+  will-change: transform;
+}
+
+/* The column's own flex gap would stack on top of the margins below. */
+.sl-grid-studio .sl-studio-copy { gap: 0; max-width: 52ch; }
+.sl-grid-studio .sl-word[data-w='Studio'] { color: var(--sl-accent); }
+
+.sl-studio-lede {
+  animation: slin .85s .24s cubic-bezier(.16, 1, .3, 1) both;
+  margin: clamp(12px, 1.8vh, 18px) 0 clamp(16px, 2.6vh, 28px);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sl-muted);
+  max-width: 42ch;
+}
+
+.sl-pillars { display: flex; flex-direction: column; }
+.sl-pillar {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: clamp(10px, 1.8vh, 17px) 0;
+  border-top: 1px solid var(--sl-rule);
+}
+.sl-pillar-icon { flex: 0 0 auto; line-height: 0; margin-top: 2px; color: var(--sl-accent); }
+.sl-pillar-text { min-width: 0; }
+.sl-pillar-title {
+  margin-bottom: 5px;
+  font-size: 12.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--sl-accent);
+}
+.sl-pillar-body {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--sl-body);
+  max-width: 40ch;
+}
+
+@media (max-width: 820px) {
+  .sl-grid-studio { grid-template-columns: 1fr; }
+  .sl-studio-render img { max-width: 520px; }
+  .sl-grid-studio .sl-studio-copy { max-width: none; }
+}
+
+/* ── Founder ───────────────────────────────────────────────────────────────── */
+
+/* A layered stage, not a column grid. The reference stacks three planes — the
+   claim behind, the figure in front of it, the reading matter to the side —
+   and that overlap is the whole effect. A two-column layout cannot produce it.
+   flex:1 makes it fill <main>, which is what lets the figure sit on the floor. */
+.sl-stage {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+.sl-claim {
+  position: absolute;
+  left: 0;
+  top: 2%;
+  z-index: 0;
+  margin: 0;
+  /* Wider measure and a touch smaller: at 9ch the claim broke into five short
+     lines and its last line collided with the figure it stands behind. */
+  /* Wide enough that the type runs on under the figure. At 12ch it stopped
+     just short of the portrait and the two read as neighbours rather than as
+     one crossing in front of the other, which is the whole device. */
+  max-width: 16ch;
+  font-weight: 400;
+  font-size: clamp(28px, 4.1vw, 72px);
+  line-height: .92;
+  letter-spacing: -.045em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .17);
+  pointer-events: none;
+}
+.sl-claim .sl-word[data-w='Operator.'] { color: rgba(245, 130, 31, .34); }
+
+/* Bottom-anchored and tall: the figure stands on the floor of the stage rather
+   than floating in a box, which is what makes it read as the subject. */
+.sl-figure {
+  position: absolute;
+  left: 22%;
+  bottom: 0;
+  z-index: 1;
+  height: 94%;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+/* The source is a rectangular crop, so the shirt ends on a hard horizontal
+   edge. Dissolving the last fifth lets it stand on the ground, not get cut by
+   it. Sides taper too, so the shoulders do not end on a vertical line. */
+.sl-figure img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  display: block;
+  will-change: transform;
+  -webkit-mask-image:
+    linear-gradient(180deg, #000 0 76%, rgba(0, 0, 0, .5) 90%, transparent 100%),
+    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(180deg, #000 0 76%, rgba(0, 0, 0, .5) 90%, transparent 100%),
+    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* One number, set large, the way the reference does it. The other two ride
+   underneath at a fraction of the size so the hierarchy stays single. */
+.sl-bigstat {
+  position: absolute;
+  left: 0;
+  bottom: 2%;
+  z-index: 2;
+  width: min(33%, 400px);
+  animation: slin .9s .42s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-bigstat-v {
+  font-size: clamp(30px, 3.6vw, 58px);
+  line-height: 1;
+  letter-spacing: -.045em;
+  color: var(--sl-accent);
+}
+.sl-bigstat-l {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--sl-body);
+  max-width: 26ch;
+}
+.sl-ministats {
+  display: flex;
+  gap: clamp(14px, 1.6vw, 26px);
+  margin-top: clamp(10px, 1.6vh, 16px);
+  padding-top: clamp(9px, 1.4vh, 14px);
+  border-top: 1px solid var(--sl-rule);
+}
+.sl-ministat { min-width: 0; }
+.sl-ministat b {
+  display: block;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: -.02em;
+  color: var(--sl-ink);
+}
+.sl-ministat span {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--sl-faint);
+}
+
+/* The organisations do the job the reference's venture tiles do — names carry
+   the credibility, so they are set as a register rather than as prose. */
+.sl-creds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 9px;
+  margin-top: clamp(8px, 1.3vh, 13px);
+  padding-top: clamp(8px, 1.2vh, 12px);
+  border-top: 1px solid var(--sl-rule);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sl-faint);
+}
+
+/* The reading matter, where the reference puts its tiles. */
+.sl-bio {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: min(34%, 430px);
+  max-height: calc(100% + 2px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sl-eyebrow {
+  animation: slin .8s .06s cubic-bezier(.16, 1, .3, 1) both;
+  margin-bottom: 10px;
+  font-size: 10.5px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--sl-accent);
+}
+.sl-founder-lede {
+  animation: slin .85s .2s cubic-bezier(.16, 1, .3, 1) both;
+  margin: 0 0 clamp(12px, 2vh, 20px);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--sl-body);
+}
+.sl-career { display: flex; flex-direction: column; }
+.sl-career-row { padding: clamp(8px, 1.4vh, 13px) 0; border-top: 1px solid var(--sl-rule); }
+.sl-career-at { margin-bottom: 3px; font-size: 12.5px; color: var(--sl-ink); letter-spacing: -.01em; }
+.sl-career-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--sl-muted); }
+
+/* Below 820px the page scrolls, so the stage unstacks into ordinary flow:
+   figure, then claim, then the reading matter. Overlap needs width it does not
+   have here. */
+@media (max-width: 820px) {
+  .sl-stage { display: flex; flex-direction: column; gap: clamp(18px, 4vw, 28px); }
+  .sl-claim,
+  .sl-figure,
+  .sl-bigstat,
+  .sl-bio {
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    height: auto;
+  }
+  .sl-claim { order: 2; max-width: 14ch; color: rgba(255, 255, 255, .9); font-size: clamp(30px, 8vw, 44px); }
+  .sl-claim .sl-word[data-w='Operator.'] { color: var(--sl-accent); }
+  .sl-figure { order: 1; align-self: center; }
+  .sl-figure img { height: auto; width: 100%; max-width: 240px; }
+  .sl-bio { order: 3; }
+  .sl-bigstat { order: 4; }
+}
+
+/* ── Contact ───────────────────────────────────────────────────────────────── */
+
+/* The travelling rim moved to Services, where ambient motion suits a browsing
+   surface. Contact is a decision surface, so it takes a fixed rail instead —
+   stiller, and it reads as more final. */
+.sl-book-beam { display: none; }
+.sl-book-frame { border-radius: 16px; }
+.sl-book { border-radius: 15px; }
+.sl-book-frame::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--sl-accent), rgba(245, 130, 31, .12));
+  box-shadow: 0 0 12px rgba(245, 130, 31, .45);
+}
+
+/* Same pill as Home and Services, same sweep bars, resting one uninked. */
+.sl-book-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sl-accent);
+  color: #180b00;
+}
+.sl-book-cta:hover { color: #180b00; }
+.sl-book-cta::after { top: 0; height: auto; background: transparent; }
+.sl-book-cta::before { top: 0; height: auto; background: rgba(255, 255, 255, .16); }
+
+.sl-who {
+  animation: slin .85s .34s cubic-bezier(.16, 1, .3, 1) both;
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  margin-top: clamp(18px, 3vh, 30px);
+  padding-top: clamp(14px, 2.4vh, 22px);
+  border-top: 1px solid var(--sl-rule);
+}
+.sl-who-photo {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(64px, 7vw, 86px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .04);
+}
+.sl-who-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 8%;
+  display: block;
+}
+.sl-who-name { font-size: 16px; letter-spacing: -.02em; color: var(--sl-ink); }
+.sl-who-role { margin: 2px 0 8px; font-size: 13px; color: var(--sl-muted); }
+.sl-who-link {
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+  padding-bottom: 3px;
+  color: var(--sl-ink);
+  border-bottom: 1px solid rgba(245, 130, 31, .8);
+}
+
+/* ── Touch targets ─────────────────────────────────────────────────────────── */
+
+/* The nav was a 23px-tall target — under even the 24px WCAG 2.5.8 floor, let
+   alone the 44px Apple and Material both ask for. The footer address and the
+   secondary CTA were smaller still.
+
+   Every one of these keeps the box it looks like and gets a transparent box
+   centred on it instead. Real padding was the first attempt and it is the wrong
+   tool here: it drags the active underline 11px off the word, and moving that
+   underline to an ::after made the indicator stop tracking the current page —
+   the pseudo-element's style is not reliably invalidated when `is-active` moves
+   between links, so the mark stayed on whichever tab was active at first paint.
+   A target that never changes state has no such problem.
+
+   Vertical only: made wider, one target would start swallowing the tap meant
+   for its neighbour. */
+@media (max-width: 820px), (pointer: coarse) {
+  .sl-nav a,
+  .sl-brand,
+  .sl-footer a,
+  .sl-cta-sub,
+  .sl-who-link { position: relative; }
+
+  .sl-nav a::before,
+  .sl-brand::before,
+  .sl-footer a::before,
+  .sl-cta-sub::before,
+  .sl-who-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
+/* Five tabs plus the wordmark do not fit one phone row — the nav ran over the
+   logo and Contact fell off the right edge. Below 560px the nav takes its own
+   line and spreads across it. */
+@media (max-width: 560px) {
+  /* 10px left the wordmark's 44px target overlapping the nav's, and the nav
+     wins it — the logo was down to 31px of reachable height. 18px gives both
+     rows their full target and costs 8px of header. */
+  .sl-header { flex-wrap: wrap; row-gap: 18px; }
+  .sl-brand { flex: 0 0 auto; }
+  .sl-nav { flex: 1 0 100%; justify-content: space-between; gap: 0; }
+  /* 12.5px is below the size anything else on the page is set in, and these are
+     the five controls the whole site is navigated by. */
+  .sl-nav a { font-size: 13.5px; }
+
+  /* On a phone the panels are far taller than they are wide — at 320px the
+     square needs to be 215% of the panel's width to reach its corners, where
+     175% only reaches 175%. The light was dying two corners short of the top
+     of the card. */
+  .sl-service-beam,
+  .sl-book-beam { width: 240%; }
+}
+
+/* ── Contact motion ────────────────────────────────────────────────────────── */
+
+/* Dropping the rotating rim left Contact with nothing moving but one-shot
+   entrances, so the page died the moment it arrived. The rail keeps a light
+   travelling along it — the same idea as the old beam, running the edge that
+   actually matters rather than orbiting the whole card. */
+.sl-book-frame::after {
+  background: linear-gradient(
+    90deg,
+    rgba(245, 130, 31, .18) 0%,
+    var(--sl-accent) 20%,
+    #ffd7a4 30%,
+    var(--sl-accent) 40%,
+    rgba(245, 130, 31, .18) 66%
+  );
+  background-size: 260% 100%;
+  animation: slrail 6s linear infinite;
+}
+@keyframes slrail {
+  from { background-position: 130% 0; }
+  to { background-position: -130% 0; }
+}
+
+/* A slow shine across the primary, so the one action on the page keeps
+   asking. Listed after the entrance so both run. */
+.sl-book-cta {
+  background: linear-gradient(
+    100deg,
+    var(--sl-accent) 0 40%,
+    #ffab5c 47%,
+    var(--sl-accent) 54% 100%
+  );
+  background-size: 280% 100%;
+  animation:
+    slin .7s .88s cubic-bezier(.16, 1, .3, 1) both,
+    slshine 5.5s ease-in-out 1.6s infinite;
+}
+@keyframes slshine {
+  0%, 100% { background-position: 120% 0; }
+  55% { background-position: -60% 0; }
+}
+
+/* The founder photo rises out of its own frame, the same masked reveal the
+   studio portrait used to run. */
+.sl-who-photo img { animation: slmask 1.1s .5s cubic-bezier(.16, 1, .3, 1) both; }
+
+/* ── Founder refinements ───────────────────────────────────────────────────── */
+
+/* Bigger and tighter. In the reference the claim is a third of the frame and
+   the figure cuts words in half on purpose — at 52px it read as a caption the
+   portrait happened to sit on. */
+.sl-claim { font-size: clamp(32px, 5.2vw, 92px); letter-spacing: -.05em; }
+
+/* The figure was floating. A pool of warm light on the floor under it, painted
+   below the figure's own layer, gives it something to stand on. */
+.sl-stage::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  bottom: -2%;
+  width: 32%;
+  height: 22%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(245, 130, 31, .22),
+    rgba(245, 130, 31, .06) 45%,
+    transparent 72%
+  );
+}
+
+/* ── Founder, rebuilt ──────────────────────────────────────────────────────── */
+
+/* The stage composition asked a mid-sentence video still to carry a whole page
+   and it could not. This plays to what is actually strong here — the numbers
+   and the arc — and gives the photograph a frame to sit in. Everything below
+   overrides the stage rules above. */
+.sl-stage { position: static; display: contents; }
+.sl-stage::after { content: none; }
+
+.sl-grid-founder { align-items: center; grid-template-columns: 1.42fr .58fr; }
+.sl-founder-copy { max-width: 68ch; }
+
+.sl-claim,
+.sl-figure { display: none; }
+
+.sl-founder-h2 {
+  max-width: 21ch;
+  font-size: clamp(26px, 3.1vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -.03em;
+  color: var(--sl-ink);
+  text-transform: none;
+  position: relative;
+}
+.sl-grid-founder .sl-word[data-w='Operator.'] { color: var(--sl-accent); }
+
+.sl-eyebrow {
+  animation: slin .8s .06s cubic-bezier(.16, 1, .3, 1) both;
+  margin-bottom: 11px;
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--sl-accent);
+}
+.sl-founder-lede {
+  animation: slin .85s .2s cubic-bezier(.16, 1, .3, 1) both;
+  margin: 13px 0 clamp(14px, 2.4vh, 24px);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--sl-body);
+  max-width: 56ch;
+}
+
+/* The event of the page. Three numbers, room around them, hairline above. */
+.sl-stats {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 1.8vw, 28px);
+  margin-bottom: clamp(14px, 2.4vh, 24px);
+}
+.sl-stat { border-top: 1px solid var(--sl-rule); padding-top: 10px; }
+.sl-stat-v {
+  font-size: clamp(26px, 2.9vw, 44px);
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: var(--sl-accent);
+}
+.sl-stat-l {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--sl-faint);
+  max-width: 22ch;
+}
+
+.sl-career {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(18px, 2.2vw, 34px);
+}
+.sl-career-row { padding: clamp(8px, 1.4vh, 13px) 0; border-top: 1px solid var(--sl-rule); }
+.sl-career-at { margin-bottom: 3px; font-size: 12.5px; color: var(--sl-ink); letter-spacing: -.01em; }
+.sl-career-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--sl-muted); }
+
+.sl-founder-side { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 18px); }
+
+/* Same three-part lit ring as Services and Contact. */
+.sl-por-frame {
+  position: relative;
+  padding: 1px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sl-rule);
+  animation: slin 1s .12s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-por-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 250deg,
+    rgba(245, 130, 31, .22) 292deg,
+    rgba(245, 130, 31, .80) 312deg,
+    rgba(245, 130, 31, .22) 332deg,
+    transparent 356deg 360deg
+  );
+  animation: slbeam 7s linear infinite;
+  will-change: transform;
+}
+.sl-por-card {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  max-height: min(56vh, 440px);
+  background: linear-gradient(158deg, #0c2247 0%, #081b38 100%);
+}
+/* Overscanned so the pointer drift never exposes an edge inside the frame. */
+.sl-por-card img {
+  position: absolute;
+  left: -5%;
+  top: -5%;
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+  object-position: 50% 14%;
+  display: block;
+  will-change: transform;
+}
+
+.sl-creds {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin: 0;
+  padding-top: clamp(8px, 1.3vh, 13px);
+  border-top: 1px solid var(--sl-rule);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sl-faint);
+}
+
+@media (max-width: 820px) {
+  .sl-grid-founder { grid-template-columns: 1fr; }
+  .sl-career, .sl-stats { grid-template-columns: 1fr; }
+  .sl-stats { gap: 0; }
+  .sl-stat { padding-block: 10px; }
+  .sl-founder-copy { max-width: none; }
+  .sl-por-card { max-height: none; }
+}
+
+/* ── Contact card: identical to the Services card ──────────────────────────── */
+
+/* The travelling rail and the shine are gone — the card runs the same rotating
+   ring the Services panel does, and nothing else. */
+.sl-book-frame::after { content: none; }
+.sl-book-beam { display: block; }
+.sl-book { background: linear-gradient(158deg, #0c2247 0%, #081b38 100%); }
+.sl-book-cta {
+  width: auto;
+  background: var(--sl-accent);
+  background-size: auto;
+  animation: slin .7s .88s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+/* ── Founder stage, final ──────────────────────────────────────────────────── */
+
+/* Full bleed and asymmetric. Every earlier attempt sat in a centred container
+   with even padding, which is the opposite of what the reference does — this
+   overrides all of them. */
+.sl-stage {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0 -46px;
+  min-height: 0;
+  overflow: hidden;
+}
+.sl-stage::after { content: none; }
+
+.sl-claim {
+  display: block;
+  position: absolute;
+  left: 46px;
+  top: 3%;
+  z-index: 1;
+  margin: 0;
+  width: 46%;
+  max-width: none;
+  font-weight: 400;
+  font-size: clamp(30px, 4.6vw, 82px);
+  line-height: .86;
+  letter-spacing: -.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .15);
+  pointer-events: none;
+}
+.sl-claim .sl-word[data-w='Operator.'] { color: rgba(245, 130, 31, .28); }
+
+.sl-bars { position: absolute; left: 46px; bottom: 30%; z-index: 1; display: flex; gap: 3px; align-items: flex-end; }
+.sl-bars i { display: block; width: 3px; background: var(--sl-accent); border-radius: 1px; opacity: .7; }
+
+/* The figure stands on the floor and is cropped by the frame. The lighting
+   falloff is baked into the asset, so the shoulders sink to the page colour and
+   there is no matte edge left to see — the same trick the reference gets from a
+   black jacket on black. */
+.sl-figure {
+  display: block;
+  position: absolute;
+  left: 23%;
+  bottom: 0;
+  z-index: 2;
+  height: 99%;
+  pointer-events: none;
+}
+.sl-figure img {
+  height: 100%;
+  width: auto;
+  max-width: none;
+  display: block;
+  will-change: transform;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.sl-floor {
+  position: absolute;
+  left: 22%;
+  bottom: -7%;
+  width: 34%;
+  height: 24%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 100%, rgba(245, 130, 31, .24), rgba(245, 130, 31, .05) 46%, transparent 72%);
+}
+
+/* The modular block that gives the page its architecture. */
+.sl-tiles {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 40%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  border-left: 1px solid var(--sl-rule);
+  animation: slin .9s .3s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  text-align: center;
+  border-right: 1px solid var(--sl-rule);
+  border-bottom: 1px solid var(--sl-rule);
+}
+.sl-tile:nth-child(3n) { border-right: 0; }
+.sl-tile:nth-child(odd) { background: rgba(255, 255, 255, .02); }
+.sl-tile b {
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  line-height: 1.25;
+  color: var(--sl-accent);
+}
+.sl-tile-wide {
+  grid-column: span 2;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px 15px;
+  background: rgba(245, 130, 31, .07);
+}
+.sl-tile-wide b { font-size: 21px; font-weight: 400; letter-spacing: -.03em; }
+.sl-tile-wide span { font-size: 10.5px; line-height: 1.4; color: var(--sl-muted); }
+
+.sl-eyebrow {
+  position: absolute;
+  left: 46px;
+  bottom: 26%;
+  z-index: 4;
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--sl-faint);
+  animation: slin .8s .18s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-bigstat {
+  position: absolute;
+  left: 46px;
+  bottom: 6%;
+  z-index: 4;
+  width: auto;
+  animation: slin .9s .4s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-bigstat b {
+  display: block;
+  font-weight: 400;
+  font-size: clamp(40px, 5.6vw, 92px);
+  line-height: .88;
+  letter-spacing: -.055em;
+  color: var(--sl-accent);
+}
+.sl-bigstat span {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c8d6e8;
+  max-width: 24ch;
+}
+
+@media (max-width: 820px) {
+  .sl-stage { margin: 0; overflow: visible; display: flex; flex-direction: column; gap: 20px; }
+  .sl-claim, .sl-figure, .sl-tiles, .sl-eyebrow, .sl-bigstat, .sl-floor, .sl-bars { position: static; width: auto; height: auto; }
+  .sl-floor, .sl-bars { display: none; }
+  .sl-claim { order: 2; width: auto; color: rgba(255, 255, 255, .92); font-size: clamp(28px, 7.6vw, 42px); }
+  .sl-claim .sl-word[data-w='Operator.'] { color: var(--sl-accent); }
+  .sl-figure { order: 1; align-self: center; }
+  .sl-figure img { height: auto; width: 100%; max-width: 250px; }
+  .sl-eyebrow { order: 3; }
+  .sl-bigstat { order: 4; }
+  .sl-tiles { order: 5; border-left: 0; border-top: 1px solid var(--sl-rule); }
+}
+
+/* ── Founder right column: career, not empty boxes ─────────────────────────── */
+
+.sl-tiles { display: none; }
+
+.sl-ledger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 40%;
+  max-height: calc(100% + 2px);
+  padding-left: clamp(20px, 2.4vw, 38px);
+  border-left: 1px solid var(--sl-rule);
+}
+.sl-led-row { padding: clamp(9px, 1.5vh, 15px) 0; border-top: 1px solid var(--sl-rule); }
+.sl-led-row:first-child { border-top: 0; }
+.sl-led-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 4px; }
+.sl-led-at { font-size: 13px; color: var(--sl-ink); letter-spacing: -.01em; }
+.sl-led-num {
+  flex: 0 0 auto;
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: -.03em;
+  color: var(--sl-accent);
+}
+.sl-led-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--sl-muted); }
+.sl-led-creds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: clamp(10px, 1.6vh, 16px);
+  padding-top: clamp(9px, 1.4vh, 14px);
+  border-top: 1px solid var(--sl-rule);
+  font-size: 9px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--sl-faint);
+}
+@media (max-width: 820px) {
+  .sl-ledger { position: static; transform: none; width: auto; max-height: none; padding-left: 0; border-left: 0; border-top: 1px solid var(--sl-rule); order: 5; }
+}
+
+/* ── Founder ledger: legibility ────────────────────────────────────────────── */
+
+/* 12px notes and a 9px register are too small to read on a full-width desktop
+   page — the 9px credentials line measured 4.7:1 against the ground, which is
+   at the floor even before the letterspacing thins it further. */
+.sl-led-at { font-size: 15px; }
+.sl-led-num { font-size: 19px; }
+.sl-led-note {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--sl-body);
+  max-width: 62ch;
+}
+.sl-led-row { padding: clamp(11px, 1.8vh, 18px) 0; }
+.sl-led-head { margin-bottom: 6px; }
+.sl-led-creds {
+  font-size: 11px;
+  letter-spacing: .09em;
+  gap: 5px 13px;
+  color: var(--sl-muted);
+}
+
+/* ── Founder ledger: thesis, two-by-two arc, payoff ────────────────────────── */
+
+/* Four stacked rows could not hold notes this long. Two columns halves the
+   height and buys room for the two things the page was missing: the thesis at
+   the top and the sentence it all resolves into at the bottom. */
+.sl-ledger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(12px, 2vh, 20px);
+}
+.sl-thesis {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sl-ink);
+  letter-spacing: -.005em;
+  animation: slin .85s .2s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-led-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(18px, 2.2vw, 34px);
+}
+.sl-led-row { padding: clamp(10px, 1.6vh, 15px) 0; border-top: 1px solid var(--sl-rule); }
+.sl-led-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.sl-led-at { font-size: 14px; color: var(--sl-ink); letter-spacing: -.01em; }
+.sl-led-num { flex: 0 0 auto; font-weight: 400; font-size: 16px; letter-spacing: -.03em; color: var(--sl-accent); }
+.sl-led-note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-body); max-width: none; }
+
+.sl-led-foot { display: flex; flex-direction: column; gap: clamp(8px, 1.3vh, 13px); padding-top: clamp(10px, 1.6vh, 15px); border-top: 1px solid var(--sl-rule); }
+/* The line the arc resolves into. It gets the accent because it is the point. */
+.sl-payoff {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -.015em;
+  color: var(--sl-accent);
+  animation: slin .85s .66s cubic-bezier(.16, 1, .3, 1) both;
+}
+.sl-led-creds { margin: 0; padding: 0; border-top: 0; }
+
+@media (max-width: 820px) {
+  .sl-led-grid { grid-template-columns: 1fr; }
+}
+
+/* At 40% the two sub-columns were ~205px and every note wrapped to seven lines,
+   which pushed the thesis off the top of the screen. Wider column, smaller
+   note, and it lands inside the frame with room to spare. */
+.sl-ledger { width: 45%; }
+.sl-thesis { font-size: 14px; }
+.sl-led-note { font-size: 12.5px; line-height: 1.5; }
+.sl-led-at { font-size: 13.5px; }
+
+/* ── Founder ledger: legibility wins over fitting ──────────────────────────── */
+
+/* I have now shrunk this type twice to make it fit a fixed screen, which is the
+   wrong trade every time. Sizes go back to readable and the column scrolls on a
+   short viewport instead — scrollbar hidden so it never steals layout width,
+   with a fade at the foot to show there is more. */
+.sl-thesis { font-size: 15px; line-height: 1.6; color: #fff; }
+.sl-led-at { font-size: 15px; }
+.sl-led-num { font-size: 18px; }
+.sl-led-note { font-size: 14px; line-height: 1.55; color: #c3d2e4; }
+.sl-payoff { font-size: 16.5px; }
+.sl-led-creds { font-size: 11px; color: #a7bad3; letter-spacing: .09em; }
+
+.sl-ledger {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 0 94%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 0 94%, transparent 100%);
+}
+.sl-ledger::-webkit-scrollbar { width: 0; height: 0; }
+
+/* 19px over at 720p, which clipped the thesis mid-sentence. The space between
+   blocks comes down, not the type. `safe center` matters: plain centring on an
+   overflowing flex column clips at BOTH ends and the top becomes unreachable —
+   safe falls back to start, so the first line is always the first line. */
+.sl-ledger {
+  justify-content: safe center;
+  gap: clamp(9px, 1.4vh, 15px);
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+.sl-led-row { padding: clamp(8px, 1.3vh, 13px) 0; }
+.sl-led-foot { padding-top: clamp(8px, 1.2vh, 12px); gap: clamp(6px, 1vh, 10px); }
+
+/* Credentials now live under the headline number. */
+.sl-bigstat .sl-led-creds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-top: clamp(10px, 1.6vh, 16px);
+  padding-top: clamp(9px, 1.4vh, 14px);
+  border-top: 1px solid var(--sl-rule);
+  max-width: 30ch;
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #a7bad3;
+}
+
+/* ── Founder: type scales with the viewport ────────────────────────────────── */
+
+/* Everything here was in fixed pixels, so on a 1600px monitor 14px body copy
+   reads as fine print next to a 90px headline. The rest of the site sizes its
+   type in vw; this column now does too, so it holds its weight on a large
+   screen and still fits a laptop. */
+.sl-thesis { font-size: clamp(14px, 1.12vw, 20px); line-height: 1.6; }
+.sl-led-at { font-size: clamp(13.5px, 1.05vw, 18.5px); }
+.sl-led-num { font-size: clamp(16px, 1.24vw, 22px); }
+.sl-led-note { font-size: clamp(12.5px, .96vw, 17px); line-height: 1.55; color: #c7d5e7; }
+.sl-payoff { font-size: clamp(15px, 1.18vw, 21px); }
+.sl-bigstat .sl-led-creds { font-size: clamp(10px, .74vw, 13px); }
+
+/* The role line was the dimmest thing on the page at 10px on #6f85a4. */
+.sl-eyebrow { font-size: clamp(10px, .78vw, 13.5px); color: #a7bad3; }
+.sl-bigstat span { font-size: clamp(11.5px, .88vw, 15px); }
+
+/* ── Founder: role line stacked, credentials along the foot ────────────────── */
+
+/* The eyebrow was absolutely positioned at a fixed percentage, so the moment
+   the stat block grew it collided with it. It is part of that block now. */
+.sl-eyebrow {
+  position: static;
+  margin: 0 0 clamp(6px, 1vh, 11px);
+  display: block;
+}
+.sl-bigstat { bottom: 13%; }
+
+.sl-creds-bar {
+  position: absolute;
+  left: 46px;
+  right: 46px;
+  bottom: clamp(12px, 2.2vh, 24px);
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding-top: clamp(9px, 1.4vh, 14px);
+  border-top: 1px solid var(--sl-rule);
+  font-size: clamp(10px, .76vw, 13px);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #a7bad3;
+  animation: slin .8s .7s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+/* The column no longer carries the register, so it gets that height back. */
+.sl-ledger { bottom: clamp(52px, 8vh, 78px); top: 0; transform: none; max-height: none; }
+
+@media (max-width: 820px) {
+  .sl-creds-bar { position: static; left: auto; right: auto; order: 6; }
+  .sl-ledger { bottom: auto; }
+}
+
+/* ── Founder type: corrected scale ─────────────────────────────────────────── */
+
+/* The previous pass overcorrected — 17px notes and 18.5px titles on a 1900px
+   screen read as oversized, not confident. This is the normal editorial range:
+   body around 14px, titles a step above, scaling gently rather than doubling. */
+.sl-thesis { font-size: clamp(13.5px, .82vw, 16px); line-height: 1.6; }
+.sl-led-at { font-size: clamp(13px, .78vw, 15px); }
+.sl-led-num { font-size: clamp(14.5px, .9vw, 17.5px); }
+.sl-led-note { font-size: clamp(12.5px, .74vw, 14.5px); line-height: 1.55; }
+.sl-payoff { font-size: clamp(14px, .84vw, 16.5px); }
+.sl-eyebrow { font-size: clamp(9.5px, .58vw, 11.5px); }
+.sl-bigstat span { font-size: clamp(11px, .66vw, 13px); }
+.sl-creds-bar { font-size: clamp(9.5px, .58vw, 11.5px); }
+
+/* The accent bars were carried over from the reference and relate to nothing
+   here. With the role line now stacked into the stat block they also collide
+   with it. Gone. */
+.sl-bars { display: none; }
+
+/* Left over from when the ledger was one stacked column, where suppressing the
+   first rule made sense. In a two-by-two it strips only the first cell, so the
+   top row came out lopsided — Forrester ruled, Enterprise not. */
+.sl-led-row:first-child { border-top: 1px solid var(--sl-rule); }
+
+/* The register duplicated the client strip directly beneath it. Removed, and
+   the career column takes the height back. */
+.sl-creds-bar { display: none; }
+.sl-ledger { bottom: clamp(14px, 2.4vh, 26px); }
+
+/* ── Founder: claim breaks, ledger fills its column ────────────────────────── */
+
+/* Three explicit lines. The longest is "NOT AN AGENCY." at 448px and the
+   figure's opaque body begins around 470 — so the claim nests into the soft
+   edge of the portrait and every line still parses. */
+.sl-claim { width: auto; max-width: 13ch; }
+
+/* Centring left a dead quadrant roughly 150px tall under the payoff, with the
+   divider running alongside nothing. The three blocks now span the full height:
+   thesis on the top rule, arc in the middle, payoff sitting on the bottom. */
+.sl-ledger { justify-content: space-between; }
+
+/* ── Deep-link boot ────────────────────────────────────────────────────────── */
+
+/* Reloading on /#services ships Home's markup — the site is one pre-rendered
+   document with hash routing — and the browser paints it before React can swap
+   the view, so the visitor got a flash of the skyline and the hero loop on the
+   way to a page that looks nothing like it. No effect ordering fixes that: the
+   paint happens before hydration. The inline script in <head> marks the
+   document before that first paint, and these rules put the loader up in its
+   place. Home sets no attribute and is untouched — it keeps its overture. */
+
+.sl-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--sl-bg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Visibility waits out the fade so the layer cannot swallow a click on its
+     way down. Going up there is no transition to run — the attribute is
+     already set at first paint. */
+  transition: opacity .45s ease, visibility 0s linear .45s;
+}
+html[data-boot='deep'] .sl-boot { opacity: 1; visibility: visible; transition: none; }
+
+/* The view fades in as the loader fades out, rather than appearing under it. */
+.sl-root { transition: opacity .45s ease; }
+html[data-boot='deep'] .sl-root { opacity: 0; transition: none; }
+
+.sl-boot-mark { height: 28px; width: auto; display: block; }
+
+/* The one mark this site is built from: a hairline with a light travelling it,
+   the same idea as the rail on the Contact card. The wait is drawn in the
+   page's own language rather than with a borrowed spinner. */
+.sl-boot-rail {
+  position: relative;
+  width: clamp(120px, 22vw, 168px);
+  height: 1px;
+  background: var(--sl-rule);
+  overflow: hidden;
+}
+.sl-boot-rail::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--sl-accent), transparent);
+  box-shadow: 0 0 10px rgba(245, 130, 31, .55);
+  animation: slbootrail 1.15s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+@keyframes slbootrail {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+/* space-between was the wrong call — with more column than content it just
+   spread the blocks to the extremes and made two gaps instead of one.
+   The hole was never the distribution: it was the divider running the full
+   height beside content that stopped short. So the column is now sized to its
+   content and centred, and the rule ends where the writing ends. */
+.sl-ledger {
+  top: 50%;
+  bottom: auto;
+  height: auto;
+  transform: translateY(-50%);
+  max-height: calc(100% - 20px);
+  justify-content: flex-start;
+  gap: clamp(14px, 2.2vh, 24px);
+}
+
+@media (max-width: 820px) {
+  /* Below 820px the document scrolls, so whether a scrollbar exists depends on
+     how tall the current view happens to be — and on a browser with classic
+     scrollbars, gaining or losing one moves every edge on the page by its
+     width. That is the sideways step you get on the way out of the loader, and
+     again on any move between a tall view and a short one. Reserving the gutter
+     permanently makes the content box one width for the whole session.
+
+     Deliberately NOT paired with locking overflow while the loader is up:
+     `stable` reserves nothing under `overflow: hidden`, so the lock reintroduced
+     the very 15px jump it was added to prevent. The loader covers the viewport
+     anyway, so there is nothing to see behind it if it does scroll.
+
+     Ignored where scrollbars are overlays, which is every real phone. */
+  html { scrollbar-gutter: stable; }
+}
+
+/* ── Founder: one grid across both halves ──────────────────────────────────── */
+
+/* The two halves shared no horizontals, so they read as two compositions placed
+   side by side. These rules span the whole page — the column is 45% wide and
+   sits hard right, so -122.2% reaches the left edge — and cross behind the
+   figure. At 12% white they are nearly invisible over the portrait's dark
+   shirt and firm over the ground, which is exactly the layering wanted. */
+.sl-ledger::before,
+.sl-ledger::after {
+  content: '';
+  position: absolute;
+  left: -122.2%;
+  right: 0;
+  height: 1px;
+  background: var(--sl-rule);
+  pointer-events: none;
+}
+.sl-ledger::before { top: 0; }
+.sl-ledger::after { bottom: 0; }
+
+/* The stat block hangs from the lower rule instead of floating at its own
+   height, so the left column finally has something to align to. */
+.sl-bigstat { bottom: auto; top: calc(50% + 6px); }
+.sl-claim { top: 8%; }
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+
+/* color-scheme: dark above should be enough to stop the browser drawing this in
+   light chrome, and on some engines it is — but not all of them honour it for a
+   classic scrollbar, which left a grey bar with arrow buttons down the edge of
+   a navy page. It was loudest against the flat ground of the loader, where it
+   was the only thing on screen that wasn't ours. So it is painted explicitly.
+
+   Both syntaxes on purpose: Chromium 121+ and Firefox take the standard
+   properties, older Chromium and Safari only understand the -webkit
+   pseudo-elements, and where both are supported the standard ones win. They
+   describe the same scrollbar either way. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .20) rgba(255, 255, 255, .04);
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, .04); }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .20);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .30); }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Classic scrollbars put a stepper at each end. On a page built from hairlines
+   they are the heaviest marks on it. */
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+
+/* While the loader is up the scrollbar goes fully transparent rather than being
+   removed: overflow stays `auto`, so the reserved gutter is still reserved and
+   nothing moves sideways when it comes back. Hiding it by locking overflow is
+   what caused the 15px step this replaced. */
+html[data-boot='deep'] { scrollbar-color: transparent transparent; }
+html[data-boot='deep']::-webkit-scrollbar-thumb,
+html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Founder: the career block becomes a lit card ──────────────────────────── */
+
+/* Bare hairlines read as a table. Services and Contact both sit on a lit panel,
+   so this page was the only one without one — and the rules crossing open space
+   were what made it feel unanchored. Same three parts: a 1px ring, a light
+   turning behind it, the panel on top masking the middle. */
+.sl-ledger::before,
+.sl-ledger::after { content: none; }
+.sl-ledger {
+  padding: 1px;
+  border-left: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sl-rule);
+  display: block;
+}
+.sl-led-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 165%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 250deg,
+    rgba(245, 130, 31, .22) 292deg,
+    rgba(245, 130, 31, .80) 312deg,
+    rgba(245, 130, 31, .22) 332deg,
+    transparent 356deg 360deg
+  );
+  animation: slbeam 7s linear infinite;
+  will-change: transform;
+}
+.sl-led-card {
+  position: relative;
+  border-radius: 15px;
+  padding: clamp(18px, 2.8vh, 30px) clamp(18px, 1.9vw, 30px);
+  background: linear-gradient(158deg, #0c2247 0%, #081b38 100%);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vh, 20px);
+}
+/* The card supplies the top edge now. */
+.sl-led-row:first-child,
+.sl-led-grid > .sl-led-row:nth-child(2) { border-top: 1px solid var(--sl-rule); }
+
+/* The hero is now a short mark plus a qualifier, so the qualifier carries the
+   words the number cannot. */
+.sl-bigstat-unit {
+  display: block;
+  margin-top: 6px;
+  font-style: normal;
+  font-size: clamp(11px, .7vw, 14px);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--sl-accent);
+}
+.sl-bigstat span { margin-top: clamp(8px, 1.2vh, 13px); max-width: 30ch; }
+
+/* ── Founder: responsive ───────────────────────────────────────────────────── */
+
+/* The desktop view is a stage — every element absolutely positioned against a
+   fixed frame: ghost claim behind the figure, ledger pinned right, stat pinned
+   bottom left. None of that survives a phone, and the existing breakpoint only
+   undid part of it. Rules further down the file re-applied `width: 45%` to the
+   ledger after the media query had set it to auto, so the career column came
+   back as a narrow slab lying across the portrait, with the stat printed on top
+   of it and the numbers cut off at the screen edge.
+
+   This is the page's whole mobile layout in one place, last in the file so no
+   later rule can partly undo it again. Everything comes out of position and
+   stacks in reading order: portrait, claim, the number, then the career card. */
+@media (max-width: 820px) {
+  .sl-stage {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(24px, 5.5vw, 38px);
+    width: auto;
+    max-width: none;
+    margin: 0;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  /* One reset covering every stage child, so anything added here later cannot
+     be left pinned to a frame that no longer exists. */
+  .sl-stage > * {
+    position: static;
+    inset: auto;
+    width: auto;
+    height: auto;
+    max-height: none;
+    transform: none;
+  }
+
+  /* Both are lighting for the staged composition and mean nothing stacked. */
+  .sl-bars,
+  .sl-floor { display: none; }
+
+  .sl-figure { order: 1; align-self: center; }
+  .sl-figure img {
+    width: 100%;
+    max-width: min(250px, 60vw);
+    height: auto;
+    /* Centring the box is not the same as centring the man. Measured off the
+       asset itself: the frame is 402px wide, but the subject's luminance
+       centroid sits at x=218 and the middle 90% of its visual mass spans
+       125-318, midpoint 222 — so he stands about 5% right of the frame's own
+       centre. Centred as a box he therefore reads as off to one side. This
+       takes that 5% back out so the person lands on the page's centre line
+       rather than the file's.
+
+       Safe here only because the pointer-drift loop that also writes this
+       element's transform never starts without a fine pointer. If the portrait
+       is ever re-cut, re-measure or drop this. */
+    transform: translateX(-5%);
+  }
+
+  /* At 15% white this is a texture sitting behind a portrait. Stacked there is
+     nothing behind it, so on a phone it is simply the page's headline and is
+     set as one — same size curve as the Contact heading, so the two pages open
+     at the same weight. */
+  .sl-claim {
+    order: 2;
+    max-width: none;
+    color: #fff;
+    font-size: clamp(24px, calc(20.3px + 1.79vw), 48px);
+    line-height: 1.04;
+    letter-spacing: -.035em;
+    pointer-events: auto;
+  }
+  .sl-claim .sl-word[data-w='Operator.'] { color: var(--sl-accent); }
+
+  .sl-bigstat { order: 3; }
+  .sl-bigstat b { font-size: clamp(44px, 13vw, 72px); }
+  .sl-bigstat span { font-size: 14px; max-width: 34ch; }
+  .sl-eyebrow { font-size: 11px; letter-spacing: .14em; }
+
+  /* Restored as its own positioning context: the beam inside is absolutely
+     positioned, and with the ledger static it was measuring itself against the
+     stage instead of its own card. */
+  .sl-ledger {
+    order: 4;
+    position: relative;
+    padding: 1px;
+    border-left: 0;
+    border-top: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--sl-rule);
+  }
+
+  /* A conic sweep has to be wider than the panel's diagonal to light its
+     corners, and stacked this card is tall enough that the circle would be over
+     a thousand pixels across — for a light too slow across that arc to read as
+     motion at all. Contact makes the same trade at this width: a fixed rail on
+     the top edge instead of a travelling one around the whole rim. */
+  .sl-led-beam { display: none; }
+  .sl-ledger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    z-index: 1;
+    background: linear-gradient(90deg, var(--sl-accent), rgba(245, 130, 31, .12));
+    box-shadow: 0 0 12px rgba(245, 130, 31, .45);
+  }
+
+  .sl-led-card { padding: clamp(20px, 5vw, 30px) clamp(18px, 4.5vw, 26px); }
+  .sl-led-grid { grid-template-columns: 1fr; }
+
+  /* The title has to be free to wrap, or the figure beside it gets pushed off
+     the edge — which is how "$0 → $7M" came to be sliced in half. */
+  .sl-led-head { gap: 12px; }
+  .sl-led-at { flex: 1 1 auto; min-width: 0; font-size: 15px; }
+  .sl-led-num { flex: 0 0 auto; font-size: 17px; }
+
+  .sl-thesis { font-size: 15.5px; line-height: 1.6; }
+  .sl-led-note { font-size: 14px; line-height: 1.6; }
+  .sl-payoff { font-size: 16px; }
+}
+
+/* The hero now holds a two-word value and a longer qualifier, so it has to
+   take either without reflowing the column. */
+.sl-bigstat { width: min(30%, 330px); }
+.sl-bigstat b { font-size: clamp(30px, 3.9vw, 62px); white-space: nowrap; }
+.sl-bigstat span { max-width: 32ch; }
+
+/* ── Founder: names, not a manufactured statistic ──────────────────────────── */
+
+.sl-bigstat { width: min(34%, 380px); }
+.sl-org-label {
+  margin-bottom: clamp(9px, 1.4vh, 14px);
+  font-size: clamp(10px, .62vw, 12.5px);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--sl-accent);
+}
+/* Set large enough to be read as credentials rather than as a footnote. */
+.sl-orgs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: clamp(6px, .9vh, 10px) clamp(10px, .9vw, 16px);
+}
+.sl-orgs span {
+  font-size: clamp(14px, 1.02vw, 20px);
+  letter-spacing: .01em;
+  color: var(--sl-ink);
+  white-space: nowrap;
+}
+/* A hairline between names rather than bullets, so the block reads as one
+   register instead of a list. */
+.sl-orgs span + span::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: .78em;
+  margin-right: clamp(10px, .9vw, 16px);
+  background: var(--sl-rule);
+  vertical-align: -.06em;
+}
+
+/* Same diagonal rule as the Services and Contact rims, which this one was left
+   out of. It is the hardest of the three: the column runs nearly the full
+   height of the stage, so at 821px it is 328 wide by 669 tall and the light
+   needs 227% of its width to close the corners — against the 165% it had, so
+   the rim went dark down both long edges.
+
+   A percentage alone cannot express this, because it scales with width while
+   the shortfall comes from height. The viewport term is what covers a tall
+   narrow window, where a width-relative square never catches up. */
+.sl-led-beam { width: max(200%, 115vh); }
+
+/* ── Founder: the figure enters, it does not appear ────────────────────────── */
+
+/* Same keyframe and easing as the Studio render, a beat behind the claim so
+   the headline leads and the subject arrives into it. Slower than the copy
+   because a full-height figure moving at text speed reads as a jump. */
+.sl-fig-in {
+  display: block;
+  height: 100%;
+  animation: slin 1.15s .18s cubic-bezier(.16, 1, .3, 1) both;
+}
+@media (max-width: 820px) {
+  /* Stacked, the figure is auto-height — a percentage here would collapse it. */
+  .sl-fig-in { height: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-fig-in { animation: none; }
+}
+
+/* The separator is drawn inside each name, so when the row wraps the name takes
+   its divider with it and every new line opens with a hairline attached to
+   nothing — nine credentials came out as six lines each led by a stray rule.
+   A flex row cannot fix this: nothing in CSS knows which item fell to a new
+   line. So at this width the register becomes a grid and the hairlines become
+   the rules between its rows, which is the same idea the ledger above it is
+   already built from. */
+@media (max-width: 820px) {
+  .sl-orgs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: 0;
+  }
+  .sl-orgs span {
+    padding: clamp(8px, 1.5vw, 11px) 12px clamp(8px, 1.5vw, 11px) 0;
+    border-top: 1px solid var(--sl-rule);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sl-orgs span + span::before { content: none; }
+
+  /* 10px at the clamp floor, under a 14px register it is labelling. */
+  .sl-org-label { font-size: 11px; letter-spacing: .16em; }
+}
+
+/* `.sl-bigstat { width: min(34%, 380px) }` is a desktop rule for the stat block
+   sitting beside the portrait, but it carries no media query, so below 820px it
+   squeezed the register to 34% of a phone — 119px — and the credential grid
+   collapsed to one column down the left third of the screen. Stacked, this
+   block is a full-width row like every other. */
+@media (max-width: 820px) {
+  .sl-bigstat { width: auto; }
+}
+
+/* Three columns rather than auto-fit: the register is nine names, so 3x3 fills
+   every row exactly. With four the last row held one cell and its rule stopped
+   a quarter of the way across, which reads as a broken table rather than a
+   finished one. */
+@media (max-width: 820px) {
+  .sl-orgs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ── Founder: interim — stop the separator leading a wrapped line ──────────── */
+
+/* A separator drawn as ::before of the next sibling has no idea where the line
+   breaks, so a wrap puts a dangling rule at the start of row two. Nothing in
+   pure CSS can hang an inline pseudo-element only when it is mid-line, so the
+   separator goes entirely and spacing carries the division instead. */
+.sl-orgs span + span::before { content: none; }
+.sl-orgs { gap: clamp(7px, 1vh, 11px) clamp(16px, 1.5vw, 26px); }
+
+/* ── Founder claim: reflow on a phone ──────────────────────────────────────── */
+
+/* The four line breaks are fixed in the data because the desktop claim has to
+   nest into the soft edge of the portrait. Stacked on a phone they are just
+   wrong: measured at this tracking "BUILT BY AN" is 5.1em, so the longest of
+   the four fills 40% of a 350px column and the headline reads as an accidental
+   narrow stack with three-fifths of the measure empty beside it.
+
+   The lines are dropped to inline so the words reflow to the column instead,
+   which gives the two complete phrases the sentence actually has — "BUILT BY AN
+   OPERATOR." / "NOT AN AGENCY." Nothing in the markup changes, so the desktop
+   composition above 820px is untouched. */
+@media (max-width: 820px) {
+  /* "BUILT BY AN OPERATOR." is the longer of the two phrases. Measuring the
+     string in isolation gives 10.06em, but it renders about 7% wider than that:
+     the words are inline-block, so each keeps the trailing letter-space that a
+     single text run would have trimmed. Dividing by 11.2 rather than 10.06
+     accounts for it and leaves ~14px in hand at 390px, so the break falls after
+     "OPERATOR." and never mid-phrase. Capped at the same 36px the home hero
+     tops out at, so this page cannot out-shout it. */
+  .sl-claim { font-size: min(36px, calc((100vw - 40px) / 11.2)); line-height: 1.02; }
+
+  /* Sizing alone only holds the break while the type is still growing with the
+     screen. Once it caps at 36px the column keeps widening, and by 560px there
+     was room for "Not" to be pulled up onto the first line — "BUILT BY AN
+     OPERATOR. NOT / AN AGENCY." Capping the measure just past the longer phrase
+     means the second phrase can never fit beside it at any width. */
+  .sl-claim { max-width: 11.2em; }
+
+  .sl-claim .sl-line {
+    display: inline;
+    overflow: visible;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  /* Each line is its own element, so joining them inline would run the last
+     word of one into the first of the next. */
+  .sl-claim .sl-line + .sl-line::before { content: ' '; }
+
+  /* A transform does not apply to an inline box, so the per-line masked rise
+     cannot run once the lines stop being blocks. The whole claim takes one
+     entrance instead — the same fade-up every other block on the page uses,
+     rather than a reveal that silently does nothing. */
+  /* The inner span carries the rise and is a block. Left as one it keeps
+     forcing a break of its own, so the lines stayed stacked even once the line
+     elements themselves went inline. */
+  .sl-claim .sl-line > span { display: inline; animation: none; }
+  .sl-claim { animation: slin .85s .12s cubic-bezier(.16, 1, .3, 1) both; }
+}
+
+/* ── Home: the entrance is a load event, not a navigation one ──────────────── */
+
+/* Same split markup, already in place. `overflow: visible` from the start so a
+   word can still lift on hover without waiting for a rise that never runs. */
+[data-instant='on'] .sl-line { overflow: visible; }
+[data-instant='on'] .sl-line > span { animation: none; }
+
+/* display:none rather than unmounting: the video element survives navigation,
+   so returning to Home costs a repaint instead of a fetch and a decode. */
+.sl-hero-media.is-off,
+.sl-hero-scrim.is-off { display: none; }

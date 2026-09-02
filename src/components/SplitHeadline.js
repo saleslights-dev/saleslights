@@ -26,8 +26,16 @@ function whenFontsReady(timeout) {
  */
 export default function SplitHeadline({
   text,
+  // Measured line breaks are greedy, so a headline whose second line is
+  // shorter than its third can never be split the way it reads best. When that
+  // happens the caller supplies the lines and measurement is skipped.
+  fixedLines,
   reveal,
   play,
+  // Renders the split lines already in place: same markup, same word spans, so
+  // hover lift and the per-word accent colours survive — only the entrance is
+  // skipped. Used when Home is re-entered by navigation rather than by load.
+  instant,
   innerRef,
   className,
   style,
@@ -38,12 +46,16 @@ export default function SplitHeadline({
   const words = text.split(' ');
   const [lines, setLines] = useState(null);
   const [failed, setFailed] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(!!instant);
   const wordRefs = useRef([]);
 
   useIsoLayoutEffect(() => {
     if (!reveal) {
       setLines(null);
+      return undefined;
+    }
+    if (fixedLines && fixedLines.length) {
+      setLines(fixedLines);
       return undefined;
     }
     let cancelled = false;
@@ -86,16 +98,16 @@ export default function SplitHeadline({
       window.removeEventListener('resize', onResize);
       cancelAnimationFrame(raf);
     };
-  }, [reveal, text]);
+  }, [reveal, text, fixedLines]);
 
   // The per-line masks that make the reveal possible would also clip a word
   // lifting on hover, so they are dropped once the rise has finished.
   useEffect(() => {
-    if (!reveal || !play || !lines) return undefined;
+    if (instant || !reveal || !play || !lines) return undefined;
     const ms = (0.9 + (lines.length - 1) * stagger) * 1000 + 120;
     const t = setTimeout(() => setRevealed(true), ms);
     return () => clearTimeout(t);
-  }, [reveal, play, lines, stagger]);
+  }, [instant, reveal, play, lines, stagger]);
 
   return (
     <Tag
@@ -104,6 +116,7 @@ export default function SplitHeadline({
       style={style}
       data-reveal={reveal && !failed ? 'on' : undefined}
       data-play={play ? 'on' : undefined}
+      data-instant={instant ? 'on' : undefined}
       data-revealed={revealed ? 'on' : undefined}
     >
       {reveal && !failed && (
@@ -128,7 +141,7 @@ export default function SplitHeadline({
               {line.split(' ').map((w, j) => (
                 <Fragment key={`${w}-${j}`}>
                   {j > 0 ? ' ' : null}
-                  <span className="sl-word">{w}</span>
+                  <span className="sl-word" data-w={w}>{w}</span>
                 </Fragment>
               ))}
             </span>

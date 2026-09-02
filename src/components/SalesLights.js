@@ -5,9 +5,12 @@ import {
   BRANDS,
   CALENDLY_BOOK,
   EMAIL,
+  FOUNDER,
   LINKEDIN,
   PAGES,
   SERVICES,
+  STUDIO_LEDE,
+  STUDIO_PILLARS,
   TABS,
 } from './data';
 import SplitHeadline from './SplitHeadline';
@@ -37,6 +40,37 @@ function isNarrow() {
 const MAGNET_RADIUS = 90;
 const MAGNET_PULL = 0.45;
 
+// One mark per studio zone, matching the badges in the render itself. Stroked
+// rather than filled so they sit at the same weight as the hairlines around
+// them, and they inherit colour from the row.
+const PILLAR_ICONS = {
+  strategy: (
+    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.7">
+      <circle cx="12" cy="12" r="8.2" />
+      <circle cx="12" cy="12" r="3.3" />
+      <path d="M12 1.6v3M12 19.4v3M1.6 12h3M19.4 12h3" strokeLinecap="round" />
+    </svg>
+  ),
+  authority: (
+    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.7">
+      <circle cx="12" cy="9" r="3.7" />
+      <path d="M5.2 20.6a6.9 6.9 0 0 1 13.6 0" strokeLinecap="round" />
+    </svg>
+  ),
+  outreach: (
+    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+      <path d="M21.4 2.6 2.6 9.8l7.1 2.9 2.9 7.1z" />
+      <path d="M9.7 12.7 21.4 2.6" />
+    </svg>
+  ),
+  pipeline: (
+    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <path d="M3.6 20.4h16.8" opacity=".45" />
+      <path d="M5.6 17.4v-4.2M10.4 17.4V9M15.2 17.4v-5.6M20 17.4V5.4" />
+    </svg>
+  ),
+};
+
 export default function SalesLights() {
   const [page, setPage] = useState('home');
   const [service, setService] = useState(0);
@@ -54,8 +88,11 @@ export default function SalesLights() {
   // takes over. Reduced motion turns this back off. `play` waits until the
   // headline is wherever it is going to rise from.
   const [revealHeadline, setRevealHeadline] = useState(true);
-  const [portraitReady, setPortraitReady] = useState(false);
   const [playHeadline, setPlayHeadline] = useState(false);
+  // The Home entrance is a page-load event. Arriving from another tab is
+  // navigation, so the headline is placed rather than replayed — re-running a
+  // nine-tenths-of-a-second masked rise on every return reads as a stutter.
+  const [homeInstant, setHomeInstant] = useState(false);
 
   const slots = useLogoSwapper();
 
@@ -67,9 +104,10 @@ export default function SalesLights() {
   const introRafs = useRef([]);
   const introPositioned = useRef(false);
   const hoverTimer = useRef(null);
+  const bootTimer = useRef(null);
 
   const glowRef = useRef(null);
-  const portraitRef = useRef(null);
+  const renderRef = useRef(null);
   const cursorRef = useRef(null);
   const ringRef = useRef(null);
   const magnetsRef = useRef([]);
@@ -170,6 +208,7 @@ export default function SalesLights() {
     (viaNav) => {
       const reduced = prefersReducedMotion();
       setRevealHeadline(!reduced);
+      setHomeInstant(!!viaNav);
 
       if (reduced || viaNav || isNarrow()) {
         settleHome();
@@ -213,6 +252,17 @@ export default function SalesLights() {
       setIntro(false);
     }
 
+    // The head script raised the loader; this is the only thing that lowers it.
+    // Held for a beat first — hydration can land in well under 100ms, and a
+    // loader that appears and vanishes that fast reads as a flicker, which is
+    // the problem it was added to solve. The view underneath is already
+    // mounted and running its own entrances behind the fade, so this reads as
+    // a hand-off rather than a wait.
+    const root = document.documentElement;
+    if (root.getAttribute('data-boot') === 'deep') {
+      bootTimer.current = setTimeout(() => root.removeAttribute('data-boot'), 460);
+    }
+
     const onKey = (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         const i = PAGES.indexOf(pageRef.current);
@@ -230,6 +280,11 @@ export default function SalesLights() {
       introRafs.current.forEach(cancelAnimationFrame);
       if (pageTimer.current) clearTimeout(pageTimer.current);
       if (hoverTimer.current) clearTimeout(hoverTimer.current);
+      // StrictMode runs this effect twice in dev. Without clearing the attribute
+      // here the second pass finds it already gone and never schedules a lower,
+      // leaving the loader up for good.
+      if (bootTimer.current) clearTimeout(bootTimer.current);
+      document.documentElement.removeAttribute('data-boot');
     };
   }, [go, enterHome]);
 
@@ -295,14 +350,16 @@ export default function SalesLights() {
       }
 
 
-      // The portrait drifts against the pointer inside a fixed frame. Entrance
-      // animations play once and the page is inert again; this keeps answering
-      // for as long as someone is on it. Null on every view but Studio.
-      if (portraitRef.current) {
+      // The studio render drifts against the pointer. Entrance animations play
+      // once and the page is inert again; this keeps answering for as long as
+      // someone is on it. Null on every view but Studio. The entrance runs on
+      // the wrapper, not here — two writers on one transform fight, and the
+      // animation would win and pin the drift at zero.
+      if (renderRef.current) {
         const nx = cx / window.innerWidth - 0.5;
         const ny = cy / window.innerHeight - 0.5;
-        portraitRef.current.style.transform =
-          `translate3d(${(nx * -16).toFixed(1)}px,${(ny * -16).toFixed(1)}px,0)`;
+        renderRef.current.style.transform =
+          `translate3d(${(nx * -13).toFixed(1)}px,${(ny * -11).toFixed(1)}px,0)`;
       }
 
       // The dot is pinned exactly to the pointer — an aim point that lags reads
@@ -364,13 +421,6 @@ export default function SalesLights() {
     };
   }, []);
 
-  // A cached image can finish loading before React attaches onLoad, and then the
-  // event never fires and the portrait stays parked out of frame.
-  useEffect(() => {
-    const el = portraitRef.current;
-    if (el && el.complete && el.naturalWidth) setPortraitReady(true);
-  }, [page]);
-
   // Re-collected per view: each page renders its own set of magnetic links.
   // Centres are measured here, not in the frame loop, so the loop never has to
   // touch layout.
@@ -406,6 +456,16 @@ export default function SalesLights() {
   const active = SERVICES[service] || SERVICES[0];
 
   return (
+    <>
+      {/* Sibling of .sl-root, not a child: the root is what fades out under the
+          loader, and an element inside it would fade with it. Always in the
+          markup so it is already painted when the head script marks the
+          document — mounting it from React would be too late. */}
+      <div className="sl-boot" aria-hidden="true">
+        <img className="sl-boot-mark" src="/logo-light.png" alt="" />
+        <span className="sl-boot-rail" />
+      </div>
+
     <div className="sl-root">
       <div className="sl-bg" aria-hidden="true">
         <div className="sl-bg-glow" ref={glowRef} />
@@ -420,7 +480,7 @@ export default function SalesLights() {
 
       <header className="sl-header" style={{ opacity: chromeOp, transition: chromeTrans }}>
         <a href="#home" onClick={go('home')} className="sl-brand">
-          <img src="/logo.avif" alt="Saleslights" />
+          <img src="/logo-light.png" alt="Saleslights" />
         </a>
         <nav className="sl-nav">
           {TABS.map((t) => (
@@ -437,14 +497,52 @@ export default function SalesLights() {
       </header>
 
       <main ref={mainRef} className={'sl-main' + (fading ? ' is-leaving' : '')}>
+        {/* Mounted on every page and hidden with a class rather than unmounted.
+            Tearing down the <video> on each nav made the browser rebuild and
+            re-decode it on the way back, which is the hitch you see returning
+            to Home. Kept alive, the loop is simply revealed again. */}
+        <div
+          className={page === 'home' ? 'sl-hero-media' : 'sl-hero-media is-off'}
+          aria-hidden="true"
+        >
+            <video
+              className="sl-hero-video"
+              ref={(el) => {
+                if (!el) return;
+                // React can leave the muted attribute out of the markup it
+                // emits, and an unmuted video is never allowed to autoplay.
+                // Setting it on the node is the only reliable way.
+                el.muted = true;
+                if (el.paused) el.play().catch(() => {});
+              }}
+              autoPlay
+              loop
+              playsInline
+              preload="auto"
+              poster="/hero-poster.webp"
+            >
+              <source src="/hero-loop.webm" type="video/webm" />
+              <source src="/hero-loop.mp4" type="video/mp4" />
+            </video>
+            {/* Shown in place of the loop under reduced motion. A real element
+                rather than a background on the wrapper, so it inherits the same
+                box and the same left-edge fade as the video it replaces. */}
+            <img className="sl-hero-poster" src="/hero-poster.webp" alt="" />
+        </div>
+        <div
+          className={page === 'home' ? 'sl-hero-scrim' : 'sl-hero-scrim is-off'}
+          aria-hidden="true"
+        />
+
         {page === 'home' && (
-          <div className="sl-grid">
+          <div className="sl-grid sl-grid-home">
             <SplitHeadline
               innerRef={homeH1Ref}
               className="sl-h1"
               style={{ transform: homeT, transition: homeTrans, opacity: 1 }}
               reveal={revealHeadline}
               play={playHeadline}
+              instant={homeInstant}
               text="We turn a good product into revenue."
             />
             <div className="sl-home-copy" style={{ opacity: chromeOp, transition: chromeTransLate }}>
@@ -467,6 +565,85 @@ export default function SalesLights() {
                 </a>
               </div>
             </div>
+          </div>
+        )}
+
+        {page === 'founder' && (
+          <div className="sl-stage">
+            <SplitHeadline
+              as="h2"
+              className="sl-claim"
+              reveal={revealHeadline}
+              play
+              text={FOUNDER.headline}
+              fixedLines={FOUNDER.headlineLines}
+            />
+            <div className="sl-bars" aria-hidden="true">
+              {[26, 38, 52, 44, 30, 20].map((h, i) => (
+                <i key={i} style={{ height: `${h}px` }} />
+              ))}
+            </div>
+            <div className="sl-floor" aria-hidden="true" />
+
+            {/* The entrance rides a wrapper, not the image: the pointer loop
+                writes transform to the img every frame, so an animation there
+                would be overwritten on the first mouse move. Same split the
+                Studio render uses. */}
+            <div className="sl-figure">
+              <div className="sl-fig-in">
+                <img ref={renderRef} src="/nick-duotone.webp" alt="Nick Krause" />
+              </div>
+            </div>
+
+            {/* Thesis, then the arc as a two-by-two so the notes can carry
+                real detail without running off the screen, then the payoff the
+                whole page has been building to. */}
+            {/* Same lit panel the Services and Contact cards use, so all three
+                pages share one object language instead of this page alone
+                being bare hairlines. */}
+            <div className="sl-ledger">
+              <span className="sl-led-beam" aria-hidden="true" />
+              <div className="sl-led-card">
+              <p className="sl-thesis">{FOUNDER.lede}</p>
+              <div className="sl-led-grid">
+                {FOUNDER.career.map((c, i) => (
+                  <div
+                    key={c.at}
+                    className="sl-led-row"
+                    style={{
+                      animation: `slin .8s ${(0.32 + i * 0.07).toFixed(2)}s cubic-bezier(.16,1,.3,1) both`,
+                    }}
+                  >
+                    <div className="sl-led-head">
+                      <span className="sl-led-at">{c.at}</span>
+                      <b className="sl-led-num">{FOUNDER.ledger[i]}</b>
+                    </div>
+                    <p className="sl-led-note">{c.note}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="sl-led-foot">
+                <p className="sl-payoff">{FOUNDER.payoff}</p>
+              </div>
+              </div>
+            </div>
+
+            {/* No manufactured hero number. This bio has no single blockbuster
+                figure — $7M is modest, $150M+ is a customer's size, 45 days
+                needs a caption. What it has is names a reader recognises in
+                under a second, which is faster credibility than any statistic
+                here. The figures keep their place in the card, where they have
+                the context that makes them mean something. */}
+            <div className="sl-bigstat">
+              <div className="sl-eyebrow">{FOUNDER.eyebrow}</div>
+              <div className="sl-org-label">Work has spanned</div>
+              <div className="sl-orgs">
+                {FOUNDER.credentials.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            </div>
+
           </div>
         )}
 
@@ -494,68 +671,65 @@ export default function SalesLights() {
               </div>
             </div>
             <div key={'svc-' + service} className="sl-service-panel">
-              <p className="sl-service-body">{active.body}</p>
-              <div className="sl-points">
-                {active.points.map((pt) => (
-                  <div key={pt} className="sl-point">
-                    {pt}
-                  </div>
-                ))}
+              {/* Same three-part rim as the Contact card: a ring, a light
+                  rotating behind it, and the panel on top masking the middle,
+                  so only the edge is ever lit. */}
+              <span className="sl-service-beam" aria-hidden="true" />
+              <div className="sl-service-card">
+                <p className="sl-service-body">{active.body}</p>
+                <div className="sl-points">
+                  {active.points.map((pt) => (
+                    <div key={pt} className="sl-point">
+                      {pt}
+                    </div>
+                  ))}
+                </div>
+                <a href="#contact" onClick={go('contact')} className="sl-service-cta" data-magnetic="">
+                  Talk to us about this
+                </a>
               </div>
-              <a href="#contact" onClick={go('contact')} className="sl-service-cta" data-magnetic="">
-                Talk to us about this
-              </a>
             </div>
           </div>
         )}
 
         {page === 'studio' && (
-          <div className="sl-grid">
+          <div className="sl-grid sl-grid-studio">
+            <div className="sl-studio-render">
+              <div className="sl-studio-render-in">
+                <img
+                  ref={renderRef}
+                  src="/studio-render.webp"
+                  alt="Isometric cutaway of the Saleslights studio floor, divided into strategy, authority, outreach and pipeline zones"
+                />
+              </div>
+            </div>
             <div className="sl-studio-copy">
               <SplitHeadline
                 as="h2"
                 className="sl-h2"
                 reveal={revealHeadline}
                 play
-                text="Hands-on consultants"
+                text="Inside the Studio"
               />
-              <div className="sl-h2-rule" aria-hidden="true" />
-              <p className="sl-studio-p sl-studio-p-1">
-                Saleslights team has former Sales leads, growth engineers and marketers who got tired
-                of watching good products lose on distribution.
-              </p>
-              <p className="sl-studio-p sl-studio-p-2">
-                We take a few clients at a time. Founders without a sales team, growth leads short on
-                capacity, businesses whose pipeline has gone quiet. In the ever changing world of AI,
-                we use a not-one-size-fits-all approach and get you the results.
-              </p>
-            </div>
-            <div className="sl-portrait-row">
-              <div className="sl-portrait-frame">
-                <div className={`sl-portrait-mask${portraitReady ? ' is-in' : ''}`}>
-                  <img
-                    src="/nick-krause.png"
-                    alt="Nick Krause"
-                    className="sl-portrait"
-                    ref={portraitRef}
-                    onLoad={() => setPortraitReady(true)}
-                  />
-                </div>
-              </div>
-              <div className="sl-person">
-                <div className="sl-person-rule" aria-hidden="true" />
-                <SplitHeadline
-                  as="div"
-                  className="sl-person-name"
-                  reveal={revealHeadline}
-                  play
-                  delay={0.76}
-                  text="Nick Krause"
-                />
-                <div className="sl-person-role">Founder</div>
-                <a href={LINKEDIN} target="_blank" rel="noopener" className="sl-person-link">
-                  LinkedIn
-                </a>
+              <p className="sl-studio-lede">{STUDIO_LEDE}</p>
+              <div className="sl-pillars">
+                {STUDIO_PILLARS.map((p, i) => (
+                  <div
+                    key={p.key}
+                    className="sl-pillar"
+                    style={{
+                      animation: `slin .8s ${(0.34 + i * 0.09).toFixed(2)}s cubic-bezier(.16,1,.3,1) both`,
+                    }}
+                  >
+                    <span className="sl-pillar-icon" aria-hidden="true">
+                      {PILLAR_ICONS[p.key]}
+                    </span>
+                    <div className="sl-pillar-text">
+                      <div className="sl-pillar-title">{p.title}</div>
+                      <p className="sl-pillar-body">{p.body}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -576,6 +750,20 @@ export default function SalesLights() {
                 Twenty minutes, no deck. You will leave knowing whether we can move your pipeline and
                 what it would take.
               </p>
+              {/* The face belongs on the surface where someone decides whether
+                  to give up half an hour, not on a page they may never open. */}
+              <div className="sl-who">
+                <div className="sl-who-photo">
+                  <img src="/nick-krause.png" alt="Nick Krause" />
+                </div>
+                <div className="sl-who-text">
+                  <div className="sl-who-name">Nick Krause</div>
+                  <div className="sl-who-role">Founder</div>
+                  <a href={LINKEDIN} target="_blank" rel="noopener" className="sl-who-link">
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
             </div>
             <div className="sl-book-frame">
               <span className="sl-book-beam" aria-hidden="true" />
@@ -625,7 +813,7 @@ export default function SalesLights() {
                   style={{
                     width: b.w,
                     height: b.h,
-                    backgroundImage: `url("/brand/${b.id}.png")`,
+                    backgroundImage: `url("/brand-orange/${b.id}.png")`,
                   }}
                 />
               </div>
@@ -642,5 +830,6 @@ export default function SalesLights() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
