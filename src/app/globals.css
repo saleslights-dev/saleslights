@@ -245,7 +245,7 @@ html.sl-pointer-link .sl-cursor-ring > i {
 
 .sl-brand { display: flex; align-items: center; }
 .sl-brand img {
-  height: 26px;
+  height: 38px;
   width: auto;
   display: block;
   filter: grayscale(1) brightness(.28) contrast(1.35);
@@ -3024,3 +3024,680 @@ html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
    so returning to Home costs a repaint instead of a fetch and a decode. */
 .sl-hero-media.is-off,
 .sl-hero-scrim.is-off { display: none; }
+
+/* ── Header, nav and footer: presence ────────────────────────────────
+   The bar was a flat strip with a 1px rule, 15px links and an active state
+   that snapped a border on and off. Everything below is about making it feel
+   built: one marker that travels, a rule that carries light rather than just
+   dividing, and a footer with something on both sides of it. */
+
+.sl-header {
+  /* A hairline that fades out at both ends instead of running edge to edge,
+     with the brand colour concentrated where the eye already is. */
+  border-bottom: 0;
+  background:
+    linear-gradient(to right, transparent, rgba(245, 130, 31, .45) 22%, rgba(255, 255, 255, .16) 55%, transparent) bottom / 100% 1px no-repeat,
+    var(--sl-bar);
+  backdrop-filter: saturate(1.15);
+}
+
+.sl-brand img {
+  transition: transform .45s cubic-bezier(.2, .7, .2, 1), filter .45s ease;
+}
+.sl-brand:hover img {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 14px rgba(245, 130, 31, .38));
+}
+
+.sl-nav { position: relative; align-items: center; }
+
+.sl-nav a {
+  position: relative;
+  font-size: 15.5px;
+  font-weight: 500;
+  letter-spacing: .002em;
+  padding: 8px 2px;
+  border-bottom: 0;           /* the travelling marker replaces it */
+  /* Only colour transitions; the lift lives on the inner span so the marker
+     measurement never moves with it. */
+  transition: color .28s cubic-bezier(.2, .7, .2, 1);
+}
+
+.sl-nav a > span {
+  display: inline-block;
+  transition: transform .28s cubic-bezier(.2, .7, .2, 1);
+}
+.sl-nav a:hover > span { transform: translateY(-1px); }
+
+.sl-nav a:hover { color: var(--sl-ink); }
+.sl-nav a.is-active { color: var(--sl-accent); border-bottom-color: transparent; }
+
+/* The travelling marker. Sized and positioned from JS, so the only thing the
+   stylesheet decides is how it looks and how it moves. */
+.sl-nav-ind {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(245, 130, 31, 0), var(--sl-accent) 22%, var(--sl-accent) 78%, rgba(245, 130, 31, 0));
+  box-shadow: 0 0 12px rgba(245, 130, 31, .55);
+  pointer-events: none;
+  /* Slightly overshooting easing, so it arrives rather than stops dead. */
+  transition: transform .42s cubic-bezier(.34, 1.4, .44, 1), width .42s cubic-bezier(.34, 1.4, .44, 1), opacity .3s ease;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+
+.sl-footer {
+  border-top: 0;
+  background:
+    linear-gradient(to right, transparent, rgba(255, 255, 255, .13) 45%, transparent) top / 100% 1px no-repeat,
+    var(--sl-bar);
+}
+
+.sl-footer-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  letter-spacing: .01em;
+}
+
+/* A small lit dot, which is the one place the brand's own metaphor can sit
+   without competing with the logo above it. */
+.sl-footer-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--sl-accent);
+  box-shadow: 0 0 10px rgba(245, 130, 31, .85);
+  flex: none;
+  animation: sl-footer-pulse 3.4s ease-in-out infinite;
+}
+
+.sl-footer-name { color: var(--sl-muted); font-weight: 600; }
+.sl-footer-sep { width: 14px; height: 1px; background: var(--sl-rule); flex: none; }
+.sl-footer-place { color: var(--sl-faint); }
+
+.sl-footer-links { gap: 26px; }
+
+.sl-footer-links a {
+  position: relative;
+  padding-bottom: 2px;
+  transition: color .25s ease;
+}
+/* Underline grows from the left rather than appearing, which is the cheapest
+   way to make a plain text link feel handled. */
+.sl-footer-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--sl-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s cubic-bezier(.2, .7, .2, 1);
+}
+.sl-footer-links a:hover::after { transform: scaleX(1); }
+.sl-footer-links a:hover { color: var(--sl-ink); }
+
+.sl-footer-year {
+  color: var(--sl-faint);
+  font-variant-numeric: tabular-nums;
+  opacity: .7;
+}
+
+@keyframes sl-footer-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(245, 130, 31, .85); }
+  50%      { opacity: .55; box-shadow: 0 0 4px rgba(245, 130, 31, .35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-nav-ind { transition: opacity .2s ease; }
+  .sl-nav a > span, .sl-brand img { transition: none; }
+  .sl-footer-dot { animation: none; }
+  .sl-footer-links a::after { transition: none; }
+}
+
+@media (max-width: 720px) {
+  .sl-brand img { height: 30px; }
+  .sl-footer-id { display: none; }   /* the links alone fill the bar here */
+  .sl-footer-links { gap: 16px; font-size: 13px; }
+}
+
+/* ── Founder page: the portrait and the claim ────────────────────────
+   Three faults, all of them structural rather than a matter of taste.
+
+   1. A later `.sl-figure img { mask-image: none }` had switched OFF the feather
+      an earlier rule already defined, so the portrait rendered as a hard
+      rectangle with a visible vertical cut down its right side. The mask is
+      restored here, wider on the right where the cut was showing.
+
+   2. The claim sits BEHIND the portrait on purpose — the type running under
+      the face is the device — but at rgba(255,255,255,.15) it was too faint to
+      read as type at all, so the crossing looked like a rendering fault rather
+      than a decision. Legible where it is exposed, still receding where the
+      portrait takes over.
+
+   3. The portrait was flat and cold against a navy ground it never met. It now
+      gets a little contrast and warmth, and a pool of light beneath it so it
+      stands IN the scene instead of on top of it. */
+
+.sl-figure img {
+  /* Two masks intersected: one fades the base into the floor, the other feathers
+     both vertical edges. `source-in` is the WebKit spelling of `intersect`;
+     both are declared because Safari still needs the prefixed one. */
+  -webkit-mask-image:
+    linear-gradient(180deg, #000 0 72%, rgba(0, 0, 0, .55) 88%, transparent 100%),
+    linear-gradient(90deg, transparent 0, #000 10%, #000 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(180deg, #000 0 72%, rgba(0, 0, 0, .55) 88%, transparent 100%),
+    linear-gradient(90deg, transparent 0, #000 10%, #000 82%, transparent 100%);
+  mask-composite: intersect;
+  filter: contrast(1.1) saturate(1.18) brightness(1.05);
+}
+
+/* The light the portrait is standing in. Sits under the figure and over the
+   background, so the subject has somewhere to be rather than floating. */
+.sl-figure::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 128%;
+  height: 62%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 100%, rgba(245, 130, 31, .17), rgba(245, 130, 31, .05) 42%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.sl-claim {
+  color: rgba(255, 255, 255, .34);
+  /* Just enough separation that the letters keep their shape where the
+     portrait's mid-tones pass behind them. */
+  text-shadow: 0 2px 26px rgba(4, 12, 28, .55);
+}
+
+/* The accent word carries its own colour, so it is restated at full strength
+   rather than inheriting the muted grey above. */
+.sl-claim .sl-word[data-w='Operator.'] { color: var(--sl-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-figure::before { display: none; }
+}
+
+/* The credential list sat as bare words over the portrait, which is why the
+   left column read as unfinished next to the lit card on the right. They are
+   chips now: a translucent fill and a blur, so they hold their own against
+   whatever tone of the photograph happens to be behind them. */
+.sl-orgs { display: flex; flex-wrap: wrap; }
+
+.sl-orgs span {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .05);
+  backdrop-filter: blur(7px) saturate(1.1);
+  -webkit-backdrop-filter: blur(7px) saturate(1.1);
+  font-size: clamp(11.5px, .72vw, 13.5px);
+  font-weight: 500;
+  letter-spacing: .012em;
+  color: rgba(255, 255, 255, .82);
+  white-space: nowrap;
+  transition: border-color .28s ease, background-color .28s ease, color .28s ease, transform .28s cubic-bezier(.2, .7, .2, 1);
+}
+
+.sl-orgs span:hover {
+  border-color: rgba(245, 130, 31, .55);
+  background: rgba(245, 130, 31, .10);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-orgs span { transition: none; }
+  .sl-orgs span:hover { transform: none; }
+}
+
+/* ── Founder: one left column instead of two floating blocks ─────────
+   The claim and the credentials were each absolutely positioned with their own
+   percentage top. Type that scales with vw against a neighbour pinned in place
+   is a collision waiting for a wide enough screen, and at 1821px it arrived:
+   the two boxes overlapped by 48px and the eyebrow printed straight across
+   "Agency.". Now they share one column and simply stack. */
+.sl-leftcol {
+  position: absolute;
+  left: 46px;
+  top: 7%;
+  z-index: 1;
+  width: min(36%, 470px);
+  display: flex;
+  flex-direction: column;
+  /* Breathing room that grows with the viewport, so the gap does not shrink to
+     nothing on the tall screens where the type is largest. */
+  gap: clamp(20px, 4.2vh, 52px);
+}
+
+/* Both revert to normal flow; the column owns the position now. */
+.sl-claim,
+.sl-bigstat {
+  position: static;
+  left: auto;
+  top: auto;
+  width: auto;
+  max-width: none;
+}
+
+/* The measure that keeps the claim to four lines without running the whole
+   width of the column. */
+.sl-claim { max-width: 12ch; }
+
+/* The claim passes UNDER the portrait, which is the device; the chips must not,
+   or they would be unreachable. */
+.sl-claim { pointer-events: none; }
+.sl-bigstat { pointer-events: auto; }
+
+@media (max-width: 1100px) {
+  .sl-leftcol { width: min(46%, 420px); }
+}
+
+/* The claim is ALLOWED to run under the portrait — that crossing is the whole
+   device. Everything below it is not: the eyebrow ran straight into the
+   shoulder and lost its last word, so it read as broken text rather than as a
+   layer.
+
+   The portrait's left edge is at 23% of the viewport, so the readable column
+   is capped just short of it and the eyebrow is free to wrap. The floor keeps
+   it usable once the two would otherwise fight for the same 200px. */
+.sl-bigstat {
+  max-width: max(250px, min(360px, calc(23vw - 70px)));
+}
+
+.sl-eyebrow {
+  white-space: normal;
+  text-wrap: balance;
+  line-height: 1.5;
+}
+
+/* Correction to the cap above: it was applied to the whole block, which forced
+   the chips into a third row and pushed the last one under the logo strip.
+
+   Only the running text needs to stop short of the portrait. The chips can use
+   the full column, because they carry their own translucent fill and blur and
+   stay legible over the feathered edge of the photograph — which is exactly
+   what that treatment was for. At the full width they settle back into two
+   rows. */
+.sl-bigstat { max-width: none; }
+
+.sl-eyebrow,
+.sl-org-label {
+  max-width: max(250px, min(360px, calc(23vw - 70px)));
+}
+
+.sl-orgs { max-width: 100%; }
+
+/* Final correction on the credentials.
+
+   Letting the chips use the full column put SPAWAR at x=427 with the portrait
+   starting at x=310 — and since the figure sits at z-index 2 above the column,
+   the chip was simply painted over. It was in the DOM, laid out, and invisible.
+
+   So the whole block stays inside the clear strip beside the portrait, and the
+   chips are made compact enough to still read as a set rather than a queue.
+   Tighter column spacing buys back the vertical room the extra row costs, so
+   this holds on a short viewport as well as a tall one. */
+.sl-orgs {
+  max-width: max(250px, min(400px, calc(23vw - 70px)));
+  gap: 7px 8px;
+}
+
+.sl-orgs span {
+  padding: 4px 10px;
+  font-size: clamp(11px, .66vw, 12.5px);
+}
+
+.sl-leftcol { gap: clamp(16px, 2.8vh, 38px); }
+
+/* ── Studio: the render as an object, not a picture ──────────────────
+   It sat flat on the page and drifted a few pixels against the pointer. It is
+   an isometric cutaway with four labelled zones, and nothing on the page ever
+   pointed at them, so it read as wallpaper beside the list that described it. */
+
+.sl-studio-render {
+  /* Perspective belongs to the container; the tilt is written to the image by
+     the pointer loop. Without a perspective ancestor a rotateX/Y is an affine
+     squash and the object looks bent rather than turned. */
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.sl-studio-render-in {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.sl-studio-render img {
+  transform-origin: 50% 55%;
+  will-change: transform;
+  /* Only the settle is eased. The pointer drift is written every frame, so a
+     transition on it would fight the loop and lag the object behind the mouse. */
+  transition: filter .5s ease;
+  filter: drop-shadow(0 38px 55px rgba(2, 8, 22, .6));
+}
+
+/* The light the object sits in. Breathes slowly, so the scene is alive even
+   when nobody is moving the mouse. */
+.sl-studio-render-in::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 78%;
+  height: 62%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at 50% 50%, rgba(245, 130, 31, .17), rgba(245, 130, 31, .05) 45%, transparent 72%);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: -1;
+  animation: sl-studio-breathe 7s ease-in-out infinite;
+}
+
+@keyframes sl-studio-breathe {
+  0%, 100% { opacity: .75; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* When a pillar is active the rest of the render steps back, so the lit zone
+   is the thing the eye lands on rather than one glow among many. */
+.sl-studio-render.is-focused img {
+  filter: drop-shadow(0 38px 55px rgba(2, 8, 22, .6)) saturate(.82) brightness(.86);
+}
+
+/* ── Zone markers ──────────────────────────────────────────────────── */
+
+.sl-zones { position: absolute; inset: 0; pointer-events: none; }
+
+.sl-zone {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  opacity: 0;
+  transform: scale(.6);
+  transition: opacity .35s ease, transform .45s cubic-bezier(.34, 1.4, .44, 1);
+}
+
+.sl-zone i {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--sl-accent);
+  box-shadow: 0 0 0 6px rgba(245, 130, 31, .18), 0 0 26px 6px rgba(245, 130, 31, .55);
+}
+
+/* The ring that leaves the marker, so the eye is pulled to the zone rather
+   than having to find a static dot. */
+.sl-zone::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 130, 31, .75);
+  opacity: 0;
+}
+
+.sl-zone.is-on { opacity: 1; transform: scale(1); }
+.sl-zone.is-on::after { animation: sl-zone-ping 1.8s cubic-bezier(.2, .7, .2, 1) infinite; }
+
+@keyframes sl-zone-ping {
+  0%   { opacity: .85; transform: scale(.7); }
+  70%  { opacity: 0;   transform: scale(2.6); }
+  100% { opacity: 0;   transform: scale(2.6); }
+}
+
+/* Placed against the labels already printed into the artwork. */
+.sl-zone-strategy  { left: 25%; top: 30%; }
+.sl-zone-authority { left: 50%; top: 26%; }
+.sl-zone-outreach  { left: 77%; top: 31%; }
+.sl-zone-pipeline  { left: 61%; top: 74%; }
+
+/* ── The pillar rows ───────────────────────────────────────────────── */
+
+.sl-pillar {
+  position: relative;
+  padding-left: 14px;
+  border-radius: 10px;
+  outline: none;
+  transition: background-color .3s ease, transform .3s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* An accent rail that grows from the middle out, marking which row owns the
+   zone currently lit on the render. */
+.sl-pillar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--sl-accent), transparent);
+  transform: scaleY(0);
+  transition: transform .38s cubic-bezier(.2, .7, .2, 1);
+}
+
+.sl-pillar.is-active { background: rgba(245, 130, 31, .055); transform: translateX(3px); }
+.sl-pillar.is-active::before { transform: scaleY(1); }
+.sl-pillar:focus-visible { box-shadow: 0 0 0 2px rgba(245, 130, 31, .55); }
+
+.sl-pillar-icon {
+  transition: transform .38s cubic-bezier(.34, 1.4, .44, 1), filter .38s ease;
+}
+.sl-pillar.is-active .sl-pillar-icon {
+  transform: scale(1.14);
+  filter: drop-shadow(0 0 10px rgba(245, 130, 31, .7));
+}
+
+.sl-pillar-title { transition: letter-spacing .38s cubic-bezier(.2, .7, .2, 1); }
+.sl-pillar.is-active .sl-pillar-title { letter-spacing: .2em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-studio-render-in::before { animation: none; }
+  .sl-zone, .sl-zone.is-on::after, .sl-pillar, .sl-pillar::before,
+  .sl-pillar-icon, .sl-pillar-title { animation: none; transition: none; }
+}
+
+/* ── Founder on a phone: repair the stack my wrapper broke ───────────
+   The 820px layer above unstacks the stage by giving .sl-claim, .sl-figure and
+   .sl-bigstat an `order` so they flow figure → claim → reading matter. Wrapping
+   the claim and the credentials in .sl-leftcol (to stop them colliding on wide
+   screens) took them out of that flex container, so the order values no longer
+   had anything to interleave and my absolute positioning overrode the stack
+   entirely. The portrait went back to sitting on top of the headline, the
+   eyebrow lost its last word again, and six of the nine chips were clipped.
+
+   So on a phone the wrapper stops being a positioned column and becomes an
+   ordinary block in the stage's flow, carrying the order the claim used to. */
+@media (max-width: 820px) {
+  .sl-leftcol {
+    position: static;
+    width: auto;
+    max-width: none;
+    order: 2;                 /* after the portrait, as before */
+    gap: clamp(14px, 3.4vw, 22px);
+  }
+
+  /* The overlap device needs width it does not have here, so the claim simply
+     reads at full strength instead of ghosting behind a photograph. */
+  .sl-claim {
+    max-width: 14ch;
+    color: rgba(255, 255, 255, .9);
+    text-shadow: none;
+    pointer-events: auto;
+  }
+
+  /* The vw-based cap collapsed to its 250px floor at this width, which is what
+     clipped the chips down to three. Nothing overlaps once the page is stacked,
+     so the cap is simply not needed. */
+  .sl-bigstat,
+  .sl-eyebrow,
+  .sl-org-label,
+  .sl-orgs {
+    max-width: none;
+  }
+
+  /* No pool of light under a portrait that is now just an image in a column. */
+  .sl-figure::before { display: none; }
+}
+
+/* ── Footer on a phone ───────────────────────────────────────────────
+   Four items on one 390px line is one too many: "Book a call" was breaking
+   across two lines mid-phrase and jamming into the corner. The links wrap as a
+   group and centre instead, and the year — which is decoration, not
+   information — steps out on the narrowest screens. */
+@media (max-width: 820px) {
+  .sl-footer {
+    justify-content: center;
+    padding: 16px 20px;
+  }
+  .sl-footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 18px;
+  }
+  /* A two-word label should never break in half. */
+  .sl-footer-links a { white-space: nowrap; }
+}
+
+@media (max-width: 560px) {
+  .sl-footer-year { display: none; }
+  .sl-footer-links { font-size: 13px; gap: 8px 16px; }
+}
+
+/* ── Nav on a phone ──────────────────────────────────────────────────
+   Five labels and a logo will not fit a 320px bar. They were running edge to
+   edge with "Contact" clipped off the right, so below 640px they move into a
+   panel and the bar keeps only the logo and a control. */
+
+.sl-burger {
+  display: none;              /* desktop keeps the links in the bar */
+  position: relative;
+  width: 44px;                /* a real thumb target, not a 24px icon */
+  height: 44px;
+  border: 1px solid var(--sl-rule);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .04);
+  cursor: pointer;
+  flex: none;
+  transition: border-color .25s ease, background-color .25s ease;
+}
+.sl-burger:hover { border-color: rgba(245, 130, 31, .5); }
+.sl-burger:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(245, 130, 31, .6); }
+
+/* Three bars from one element: the middle is the element, the outer two are
+   its pseudo-elements, so the whole mark is a single box to position. */
+.sl-burger span,
+.sl-burger span::before,
+.sl-burger span::after {
+  position: absolute;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  margin-left: -9px;
+  border-radius: 2px;
+  background: var(--sl-ink);
+  transition: transform .34s cubic-bezier(.2, .7, .2, 1), opacity .2s ease;
+}
+.sl-burger span { top: 50%; margin-top: -1px; }
+.sl-burger span::before { content: ''; left: 0; margin-left: 0; transform: translateY(-6px); }
+.sl-burger span::after  { content: ''; left: 0; margin-left: 0; transform: translateY(6px); }
+
+/* Into an X. The middle bar fades rather than rotating with the others, which
+   is what stops the closed mark looking like a thick single stroke. */
+.sl-burger.is-open span { background: transparent; }
+.sl-burger.is-open span::before { transform: translateY(0) rotate(45deg); background: var(--sl-accent); }
+.sl-burger.is-open span::after  { transform: translateY(0) rotate(-45deg); background: var(--sl-accent); }
+
+.sl-nav-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  border: 0;
+  padding: 0;
+  background: rgba(4, 12, 28, .55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  cursor: default;
+  animation: sl-scrim-in .28s ease both;
+}
+
+@keyframes sl-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 640px) {
+  .sl-burger { display: block; }
+
+  .sl-header { padding: 16px 20px; }
+
+  /* The panel. Anchored under the bar rather than covering the whole screen,
+     so the logo stays visible and the page never feels replaced. */
+  .sl-nav {
+    position: fixed;
+    z-index: 9;
+    left: 12px;
+    right: 12px;
+    top: 76px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--sl-rule);
+    border-radius: 16px;
+    background: #0c2145;
+    box-shadow: 0 26px 60px rgba(2, 8, 22, .6);
+    /* Closed: collapsed and untouchable, but still in the DOM so the open and
+       close both animate. visibility, not display, or there is nothing to
+       transition from. */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(.98);
+    transform-origin: 100% 0;
+    transition: opacity .26s ease, transform .32s cubic-bezier(.2, .7, .2, 1), visibility .32s;
+  }
+
+  .sl-nav.is-open { opacity: 1; visibility: visible; transform: none; }
+
+  .sl-nav a {
+    padding: 13px 14px;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: background-color .22s ease, color .22s ease;
+  }
+  .sl-nav a.is-active { background: rgba(245, 130, 31, .10); }
+  .sl-nav a:active { background: rgba(255, 255, 255, .06); }
+
+  /* The travelling marker is a desktop device: in a vertical list it would have
+     to jump between rows, which reads as a glitch rather than a flourish. The
+     active row is coloured and tinted instead. */
+  .sl-nav-ind { display: none; }
+  .sl-nav a > span { display: block; }
+  .sl-nav a:hover > span { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-nav, .sl-burger span, .sl-burger span::before, .sl-burger span::after,
+  .sl-nav-scrim { transition: none; animation: none; }
+}
+
+/* The panel opened UNDER its own backdrop.
+
+   .sl-header is `position: relative; z-index: 1`, which makes it a stacking
+   context — so the panel's z-index:9 is resolved INSIDE the header and competes
+   only with its siblings there. Against the scrim, which sits at z-index 8 in
+   the root context, the whole header lost, panel included. Raising a child was
+   never going to work; the header itself has to clear the scrim. */
+.sl-header.is-menu { z-index: 10; }

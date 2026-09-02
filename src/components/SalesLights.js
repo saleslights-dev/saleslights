@@ -106,6 +106,64 @@ export default function SalesLights() {
   const hoverTimer = useRef(null);
   const bootTimer = useRef(null);
 
+  /* Which pillar the reader is on, so the render can answer.
+
+     The four labels are printed into the artwork itself — Strategy, Authority,
+     Outreach, Pipeline — but nothing connected the list on the right to the
+     zones on the left, so the render was decoration you looked at once. Naming
+     the active pillar lets the corresponding zone light up, which turns a
+     static image into the diagram it was drawn to be. */
+  const [activePillar, setActivePillar] = useState(null);
+  /* The mobile menu.
+
+     Five labels plus a logo do not fit a 320px bar: "Contact" was clipped at
+     the right edge and the row ran edge to edge with no margin. Shrinking the
+     type would have kept it technically on screen and made it look squeezed,
+     so below the breakpoint the links move into a panel instead. */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
+  /*
+    Where the sliding marker sits.
+
+    Measured from the live DOM rather than computed from an index, because the
+    labels are different widths and any guess would drift the moment a tab is
+    renamed. useLayoutEffect so the move is committed before paint; a plain
+    useEffect lets one frame through at the old position, which reads as a
+    stutter on every click.
+  */
+  const [ind, setInd] = useState({ left: 0, width: 0, ready: false });
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    // The page behind a full-height panel must not scroll under it. Restored on
+    // close rather than cleared, so a page that was already locked stays locked.
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
+
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const measure = () => {
+      const el = nav.querySelector('a.is-active');
+      if (!el) return;
+      setInd({ left: el.offsetLeft, width: el.offsetWidth, ready: true });
+    };
+    measure();
+    // Re-measured on resize because the labels reflow, and once the webfont
+    // settles: the marker is sized to text that is still Arial on first paint,
+    // so without this it sits a few pixels wide of the word it underlines.
+    const ro = new ResizeObserver(measure);
+    ro.observe(nav);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
+    return () => ro.disconnect();
+  }, [page]);
   const glowRef = useRef(null);
   const renderRef = useRef(null);
   const cursorRef = useRef(null);
@@ -358,8 +416,17 @@ export default function SalesLights() {
       if (renderRef.current) {
         const nx = cx / window.innerWidth - 0.5;
         const ny = cy / window.innerHeight - 0.5;
-        renderRef.current.style.transform =
-          `translate3d(${(nx * -13).toFixed(1)}px,${(ny * -11).toFixed(1)}px,0)`;
+        // The studio render is the only one that tilts. renderRef is shared with
+        // the founder portrait, and rotating a photograph of a person in 3D
+        // looks like a fault rather than a flourish, so the element opts in.
+        if (renderRef.current.dataset.tilt === '3d') {
+          renderRef.current.style.transform =
+            `translate3d(${(nx * -16).toFixed(1)}px,${(ny * -12).toFixed(1)}px,0)` +
+            ` rotateX(${(ny * 7).toFixed(2)}deg) rotateY(${(nx * -9).toFixed(2)}deg)`;
+        } else {
+          renderRef.current.style.transform =
+            `translate3d(${(nx * -13).toFixed(1)}px,${(ny * -11).toFixed(1)}px,0)`;
+        }
       }
 
       // The dot is pinned exactly to the pointer — an aim point that lags reads
@@ -478,23 +545,70 @@ export default function SalesLights() {
         <i />
       </div>
 
-      <header className="sl-header" style={{ opacity: chromeOp, transition: chromeTrans }}>
+      <header
+        className={'sl-header' + (menuOpen ? ' is-menu' : '')}
+        style={{ opacity: chromeOp, transition: chromeTrans }}
+      >
         <a href="#home" onClick={go('home')} className="sl-brand">
           <img src="/logo-light.png" alt="Saleslights" />
         </a>
-        <nav className="sl-nav">
+        {/* The control that opens the panel. Hidden above the breakpoint, where
+            the links sit in the bar as they always have. */}
+        <button
+          type="button"
+          className={'sl-burger' + (menuOpen ? ' is-open' : '')}
+          aria-expanded={menuOpen}
+          aria-controls="sl-nav"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <span aria-hidden="true" />
+        </button>
+        <nav
+          id="sl-nav"
+          className={'sl-nav' + (menuOpen ? ' is-open' : '')}
+          ref={navRef}
+        >
+          {/* The active marker is ONE element that slides, rather than a border
+              switched on and off per link. Moving a single object is what makes
+              the change read as deliberate instead of as a repaint, and it is
+              the difference between this bar feeling built and feeling default.
+              Hidden until measured, so it never flashes at x=0 on first paint. */}
+          <span
+            className="sl-nav-ind"
+            aria-hidden="true"
+            style={{
+              transform: `translateX(${ind.left}px)`,
+              width: ind.width + 'px',
+              opacity: ind.ready ? 1 : 0,
+            }}
+          />
           {TABS.map((t) => (
             <a
               key={t.key}
               href={'#' + t.key}
-              onClick={go(t.key)}
+              onClick={(e) => {
+                setMenuOpen(false);
+                go(t.key)(e);
+              }}
               className={page === t.key ? 'is-active' : undefined}
             >
-              {t.label}
+              <span>{t.label}</span>
             </a>
           ))}
         </nav>
       </header>
+
+      {/* Tapping outside is the gesture people try first. Rendered only while
+          open so it can never swallow a click on the page behind it. */}
+      {menuOpen && (
+        <button
+          type="button"
+          className="sl-nav-scrim"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
 
       <main ref={mainRef} className={'sl-main' + (fading ? ' is-leaving' : '')}>
         {/* Mounted on every page and hidden with a class rather than unmounted.
@@ -570,14 +684,35 @@ export default function SalesLights() {
 
         {page === 'founder' && (
           <div className="sl-stage">
-            <SplitHeadline
-              as="h2"
-              className="sl-claim"
-              reveal={revealHeadline}
-              play
-              text={FOUNDER.headline}
-              fixedLines={FOUNDER.headlineLines}
-            />
+            {/* The claim and the credentials are ONE column now.
+
+                They used to be two absolutely positioned blocks with fixed
+                percentage tops. The claim's font-size scales with viewport
+                width and the block beneath it did not move, so on a wide screen
+                the headline grew down THROUGH it: at 1821px the two boxes
+                overlapped by 48px and "Agency." was rendered underneath
+                "Founder, Saleslights - GTM engineer". Stacking them in a flex
+                column means the credentials are always pushed below whatever
+                height the type happens to take. */}
+            <div className="sl-leftcol">
+              <SplitHeadline
+                as="h2"
+                className="sl-claim"
+                reveal={revealHeadline}
+                play
+                text={FOUNDER.headline}
+                fixedLines={FOUNDER.headlineLines}
+              />
+              <div className="sl-bigstat">
+                <div className="sl-eyebrow">{FOUNDER.eyebrow}</div>
+                <div className="sl-org-label">Work has spanned</div>
+                <div className="sl-orgs">
+                  {FOUNDER.credentials.map((c) => (
+                    <span key={c}>{c}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
             <div className="sl-bars" aria-hidden="true">
               {[26, 38, 52, 44, 30, 20].map((h, i) => (
                 <i key={i} style={{ height: `${h}px` }} />
@@ -634,15 +769,6 @@ export default function SalesLights() {
                 under a second, which is faster credibility than any statistic
                 here. The figures keep their place in the card, where they have
                 the context that makes them mean something. */}
-            <div className="sl-bigstat">
-              <div className="sl-eyebrow">{FOUNDER.eyebrow}</div>
-              <div className="sl-org-label">Work has spanned</div>
-              <div className="sl-orgs">
-                {FOUNDER.credentials.map((c) => (
-                  <span key={c}>{c}</span>
-                ))}
-              </div>
-            </div>
 
           </div>
         )}
@@ -694,13 +820,32 @@ export default function SalesLights() {
 
         {page === 'studio' && (
           <div className="sl-grid sl-grid-studio">
-            <div className="sl-studio-render">
+            <div
+              className={'sl-studio-render' + (activePillar ? ' is-focused' : '')}
+              data-zone={activePillar || undefined}
+            >
               <div className="sl-studio-render-in">
                 <img
                   ref={renderRef}
+                  data-tilt="3d"
                   src="/studio-render.webp"
                   alt="Isometric cutaway of the Saleslights studio floor, divided into strategy, authority, outreach and pipeline zones"
                 />
+                {/* One marker per zone, placed over the spot the artwork already
+                    labels. Percentages rather than pixels so they stay on their
+                    zone at every size the render is drawn at. Decorative: the
+                    same information is in the list beside it, which is what a
+                    screen reader gets. */}
+                <div className="sl-zones" aria-hidden="true">
+                  {STUDIO_PILLARS.map((p) => (
+                    <span
+                      key={p.key}
+                      className={'sl-zone sl-zone-' + p.key + (activePillar === p.key ? ' is-on' : '')}
+                    >
+                      <i />
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="sl-studio-copy">
@@ -716,7 +861,14 @@ export default function SalesLights() {
                 {STUDIO_PILLARS.map((p, i) => (
                   <div
                     key={p.key}
-                    className="sl-pillar"
+                    className={'sl-pillar' + (activePillar === p.key ? ' is-active' : '')}
+                    // Focus as well as hover, so the link between the list and
+                    // the render exists for a keyboard too and not only a mouse.
+                    tabIndex={0}
+                    onMouseEnter={() => setActivePillar(p.key)}
+                    onMouseLeave={() => setActivePillar(null)}
+                    onFocus={() => setActivePillar(p.key)}
+                    onBlur={() => setActivePillar(null)}
                     style={{
                       animation: `slin .8s ${(0.34 + i * 0.09).toFixed(2)}s cubic-bezier(.16,1,.3,1) both`,
                     }}
@@ -823,10 +975,25 @@ export default function SalesLights() {
       </div>
 
       <footer className="sl-footer" style={{ opacity: chromeOp, transition: chromeTrans }}>
-        <span />
+        {/* The left half used to be an empty <span/>, which is why the bar read
+            as unfinished: the whole footer was one huddle of text jammed against
+            the right edge with nothing balancing it. It now carries who and
+            where, which is the thing a consultancy footer is actually for. */}
+        <div className="sl-footer-id">
+          <span className="sl-footer-dot" aria-hidden="true" />
+          <span className="sl-footer-name">Saleslights</span>
+          <span className="sl-footer-sep" aria-hidden="true" />
+          <span className="sl-footer-place">New York</span>
+        </div>
         <div className="sl-footer-links">
+          <a href={CALENDLY_BOOK} target="_blank" rel="noopener noreferrer">
+            Book a call
+          </a>
+          <a href={LINKEDIN} target="_blank" rel="noopener noreferrer">
+            LinkedIn
+          </a>
           <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-          <span>2026</span>
+          <span className="sl-footer-year">2026</span>
         </div>
       </footer>
     </div>
