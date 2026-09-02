@@ -23,7 +23,6 @@ export const BRANDS = [
   { id: 'hilltown', alt: 'Hill Town Advisors', w: '100%', h: '64%' },
   { id: 'sherpa', alt: 'Sherpa', w: '100%', h: '62%' },
   { id: 'dutyrefunds', alt: 'DutyRefunds', w: '100%', h: '52%' },
-  { id: 'jenkins', alt: 'Jenkins Homebuyers', w: '92%', h: '100%' },
   { id: 'himss', alt: 'HIMSS', w: '100%', h: '56%' },
   { id: 'incendium', alt: 'Incendium', w: '100%', h: '66%' },
   { id: 'bird', alt: 'Client', w: '58%', h: '100%' },
