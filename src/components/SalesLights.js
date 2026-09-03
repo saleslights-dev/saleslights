@@ -726,7 +726,7 @@ export default function SalesLights() {
                 Studio render uses. */}
             <div className="sl-figure">
               <div className="sl-fig-in">
-                <img ref={renderRef} src="/nick-duotone.webp" alt="Nick Krause" />
+                <img ref={renderRef} src="/nick-founder.webp" alt="Nick Krause" />
               </div>
             </div>
 
@@ -905,8 +905,12 @@ export default function SalesLights() {
               {/* The face belongs on the surface where someone decides whether
                   to give up half an hour, not on a page they may never open. */}
               <div className="sl-who">
-                <div className="sl-who-photo">
-                  <img src="/nick-krause.png" alt="Nick Krause" />
+                {/* The portrait is a cutout, so it stands on the glow instead of
+                    sitting in a box. The old framed thumbnail was a video still
+                    of a different shoot entirely, and it read as a placeholder. */}
+                <div className="sl-who-stage">
+                  <span className="sl-who-glow" aria-hidden="true" />
+                  <img className="sl-who-main" src="/nick-contact.webp" alt="Nick Krause" />
                 </div>
                 <div className="sl-who-text">
                   <div className="sl-who-name">Nick Krause</div>
@@ -915,6 +919,15 @@ export default function SalesLights() {
                     LinkedIn
                   </a>
                 </div>
+                {/* Decorative seconds, and a SIBLING of the stage rather than a
+                    child of it: inside the stage they were laid out in its
+                    178px box and shoved the portrait off the left edge.
+                    aria-hidden with empty alt because they are the same person
+                    as the portrait above. */}
+                <span className="sl-who-chips" aria-hidden="true">
+                  <img src="/nick-b.webp" alt="" />
+                  <img src="/nick-a.webp" alt="" />
+                </span>
               </div>
             </div>
             <div className="sl-book-frame">
@@ -962,10 +975,17 @@ export default function SalesLights() {
                   aria-label={b.alt}
                   title={b.alt}
                   className={`sl-logo${sl.visible ? '' : ' is-out'}`}
+                  /* Mask, not background-image. These are the clients' own
+                     logos in their own colours -- navy, black, full-colour --
+                     and dropping them straight onto a dark strip would look
+                     like a ransom note. Masking takes only their SHAPE and
+                     paints it in the brand orange, so any logo added later
+                     matches without being edited first. */
                   style={{
                     width: b.w,
                     height: b.h,
-                    backgroundImage: `url("/brand-orange/${b.id}.png")`,
+                    WebkitMaskImage: `url("/brand-orange/${b.file}")`,
+                    maskImage: `url("/brand-orange/${b.file}")`,
                   }}
                 />
               </div>

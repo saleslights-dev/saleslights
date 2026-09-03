@@ -2,7 +2,11 @@ export const PAGES = ['home', 'founder', 'services', 'studio', 'contact'];
 
 // Slots in the client strip. Fewer than BRANDS, which is what leaves a pool for
 // the swapper to draw from.
-export const SLOT_COUNT = 7;
+// Five, not seven. The swapper picks a replacement from the brands NOT
+// currently on screen, so with SLOT_COUNT equal to BRANDS.length the pool is
+// empty and every slot fades out and back in showing the same logo -- a blink
+// with no swap. Five on screen leaves a real pool of two.
+export const SLOT_COUNT = 5;
 
 export const TABS = [
   { label: 'Home', key: 'home' },
@@ -16,16 +20,32 @@ export const TABS = [
 
 // w/h are the box the mark fills inside its slot — they differ per logo so
 // wordmarks and stacked marks read at the same optical weight.
+// The real client list. The previous nine were logos of companies that were
+// never Saleslights clients, which Nick flagged directly.
+//
+// Only AdRem and Video Funker publish a usable wordmark; the other five expose
+// nothing but a square favicon, so those are set typographically in one weight
+// and one colour rather than faked up from icons. Dropping a real logo in at
+// public/brand-orange/<id>.png replaces any of them with no code change.
+//
+// h is tuned per mark, not shared: the marks have different aspect ratios and
+// a single value would make the long ones tower over the short ones.
 export const BRANDS = [
-  { id: 'upcredit', alt: 'UpCredit', w: '100%', h: '58%' },
-  { id: 'wse', alt: 'WSE Property Services', w: '72%', h: '100%' },
-  { id: 'sats', alt: 'SATS Group', w: '100%', h: '52%' },
-  { id: 'hilltown', alt: 'Hill Town Advisors', w: '100%', h: '64%' },
-  { id: 'sherpa', alt: 'Sherpa', w: '100%', h: '62%' },
-  { id: 'dutyrefunds', alt: 'DutyRefunds', w: '100%', h: '52%' },
-  { id: 'himss', alt: 'HIMSS', w: '100%', h: '56%' },
-  { id: 'incendium', alt: 'Incendium', w: '100%', h: '66%' },
-  { id: 'bird', alt: 'Client', w: '58%', h: '100%' },
+  // The real client list, using each company's OWN logo pulled from their site.
+  // Files are whatever the source published -- SVG where the site inlines or
+  // serves one, PNG otherwise -- so `file` carries the extension rather than it
+  // being assumed. They are masked, not drawn, so their source colours do not
+  // matter and a replacement needs no editing first.
+  //
+  // h differs a lot here because two of these are square marks and five are
+  // wordmarks; a shared value would make the square ones tiny.
+  { id: 'adrem', file: 'adrem.svg', alt: 'AdRem', w: '100%', h: '62%' },
+  { id: 'thesherpa', file: 'thesherpa.png', alt: 'The Sherpa', w: '100%', h: '86%' },
+  { id: 'parcle', file: 'parcle.svg', alt: 'Parcle', w: '100%', h: '52%' },
+  { id: 'findurlawyer', file: 'findurlawyer.png', alt: 'FindUrLawyer', w: '100%', h: '54%' },
+  { id: 'videofunker', file: 'videofunker.png', alt: 'Video Funker', w: '100%', h: '52%' },
+  { id: 'valdera', file: 'valdera.svg', alt: 'Valdera', w: '100%', h: '48%' },
+  { id: 'siguro', file: 'siguro.svg', alt: 'Siguro', w: '100%', h: '50%' },
 ];
 
 // Drawn from the founder bio. The page is one fixed screen, so this is the
@@ -61,7 +81,9 @@ export const FOUNDER = {
         'A multimillion-dollar government practice from no existing book — DHS, ICE and CBP. Biometric Entry/Exit research designed to save taxpayers millions.',
     },
     {
-      at: 'Sherpa',
+      // The client is not named on the record. Nick's instruction, and the work
+      // described below is why: JSOC, Navy SEALs and Apache training.
+      at: 'Top Secret Defense Contractor',
       note:
         'Founded 2021 on CMMC and government cybersecurity. Seven people and a $150M+ defense contractor supporting JSOC, Navy SEALs and Apache training. Acquired.',
     },

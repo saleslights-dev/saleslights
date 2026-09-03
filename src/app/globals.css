@@ -935,9 +935,15 @@ html.sl-pointer-link .sl-cursor-ring > i {
 /* State is a class, not an inline opacity, so the hover below can still win —
    an inline style would outrank it. */
 .sl-logo {
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+  /* The colour comes from here and the shape from the mask, so every client
+     mark reads in one weight regardless of what colours its own file uses. */
+  background-color: var(--sl-accent);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
   opacity: .62;
   transition: opacity .55s ease;
 }
@@ -1559,6 +1565,26 @@ html.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(255, 255, 255, .38
 
 /* Bottom-anchored and tall: the figure stands on the floor of the stage rather
    than floating in a box, which is what makes it read as the subject. */
+/* Grounding shadow. He dissolves at the waist, so without something dark
+   pooling under him he reads as floating rather than standing in the panel.
+   Sits behind the image and is deliberately soft and off-centre-free: a hard
+   ellipse would look like a sticker's drop shadow, which is the opposite of
+   what this is for. */
+.sl-figure::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -2%;
+  width: 92%;
+  height: 22%;
+  transform: translateX(-50%);
+  background: radial-gradient(52% 50% at 50% 100%, rgba(0, 0, 0, .58), rgba(0, 0, 0, .22) 45%, transparent 72%);
+  filter: blur(16px);
+  z-index: 0;
+  pointer-events: none;
+}
+.sl-figure img { position: relative; z-index: 1; }
+
 .sl-figure {
   position: absolute;
   left: 22%;
@@ -1569,23 +1595,26 @@ html.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(255, 255, 255, .38
   align-items: flex-end;
   pointer-events: none;
 }
-/* The source is a rectangular crop, so the shirt ends on a hard horizontal
-   edge. Dissolving the last fifth lets it stand on the ground, not get cut by
-   it. Sides taper too, so the shoulders do not end on a vertical line. */
+/* The source is now a real cutout with its own alpha, and the torso fade is
+   baked into that alpha rather than applied here. The old side taper has to go
+   with it: it existed to hide the vertical edges of a rectangular crop, and on
+   a cutout it just eats the shoulders. A light drop shadow does the separating
+   work the taper used to fake. */
 .sl-figure img {
   height: 100%;
   width: auto;
   max-width: 100%;
   display: block;
   will-change: transform;
-  -webkit-mask-image:
-    linear-gradient(180deg, #000 0 76%, rgba(0, 0, 0, .5) 90%, transparent 100%),
-    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(180deg, #000 0 76%, rgba(0, 0, 0, .5) 90%, transparent 100%),
-    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
-  mask-composite: intersect;
+  filter: drop-shadow(0 24px 60px rgba(0, 0, 0, .55));
+  /* height:100% and max-width together were SQUASHING him: the width cap that
+     protects the gutter to the credentials card clamped the width while the
+     height stayed pinned, so he rendered at 0.47 aspect against a natural
+     0.80 -- about 59% of his true width. contain makes the cap take height
+     with it instead of distorting, and the bottom anchor keeps him standing
+     on the floor of the panel rather than floating. */
+  object-fit: contain;
+  object-position: 50% 100%;
 }
 
 /* One number, set large, the way the reference does it. The other two ride
@@ -1746,30 +1775,91 @@ html.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(255, 255, 255, .38
   animation: slin .85s .34s cubic-bezier(.16, 1, .3, 1) both;
   display: flex;
   align-items: flex-end;
-  gap: 15px;
+  gap: clamp(14px, 1.6vw, 22px);
   margin-top: clamp(18px, 3vh, 30px);
   padding-top: clamp(14px, 2.4vh, 22px);
   border-top: 1px solid var(--sl-rule);
 }
-.sl-who-photo {
+/* The portrait cluster. One cutout standing on a glow, with two smaller
+   frames trailing it -- enough to read as a person rather than an avatar,
+   without turning the column into a gallery. */
+.sl-who-stage {
   position: relative;
   flex: 0 0 auto;
-  width: clamp(64px, 7vw, 86px);
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .04);
+  width: clamp(132px, 13vw, 178px);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
-.sl-who-photo img {
+/* Lifts the figure off a flat panel. Sits behind everything in the stage and
+   is the only element here that is allowed to bleed outside it. */
+.sl-who-glow {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 8%;
-  display: block;
+  left: 50%;
+  bottom: -6%;
+  width: 132%;
+  height: 92%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(50% 50% at 50% 62%, rgba(245, 130, 31, .30), transparent 70%),
+    radial-gradient(42% 46% at 50% 70%, rgba(120, 170, 255, .18), transparent 72%);
+  filter: blur(14px);
+  animation: slglow 7s ease-in-out infinite;
+  pointer-events: none;
 }
-.sl-who-name { font-size: 16px; letter-spacing: -.02em; color: var(--sl-ink); }
+@keyframes slglow {
+  0%, 100% { opacity: .75; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;   transform: translateX(-50%) scale(1.06); }
+}
+.sl-who-main {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .5));
+  transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+}
+/* Right-aligned into the column's dead space rather than stacked on his
+   chest. The row is 645px wide and the name block ends around 330, so the
+   chips both fill that gap and stop covering the portrait they belong to.
+   Laid out in flow, never absolutely: the contact view is a fixed
+   non-scrolling viewport with zero spare height, so this may only grow
+   sideways. */
+.sl-who-chips {
+  order: 2;
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, .8vw, 10px);
+  margin: 0 clamp(2px, .8vw, 10px) clamp(4px, .8vh, 10px) 0;
+}
+.sl-who-chips img {
+  width: clamp(46px, 4.6vw, 64px);
+  height: clamp(46px, 4.6vw, 64px);
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+  border: 2px solid var(--sl-panel, #0d1a30);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .45);
+  transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+}
+/* Overlap, then separate on hover. row-reverse means the FIRST chip paints on
+   top, so the negative margin goes on the later one. */
+/* Column, so the offset is vertical -- and only the lower one shifts, which
+   is what makes the pair read as stacked rather than as a list. */
+.sl-who-chips img + img { margin-left: clamp(8px, 1vw, 14px); }
+.sl-who:hover .sl-who-main { transform: translateY(-4px); }
+.sl-who:hover .sl-who-chips img { transform: translateY(-3px); }
+.sl-who:hover .sl-who-chips img + img { transform: translate(4px, -3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-who-glow { animation: none; }
+  .sl-who-main, .sl-who-chips img { transition: none; }
+}
+.sl-who-text { order: 3; flex: 1 1 auto; min-width: 0; }
+.sl-who-name { font-size: clamp(16px, 1.35vw, 19px); letter-spacing: -.02em; color: var(--sl-ink); }
 .sl-who-role { margin: 2px 0 8px; font-size: 13px; color: var(--sl-muted); }
 .sl-who-link {
   position: relative;
@@ -2137,13 +2227,22 @@ html.sl-pointer-link .sl-cursor-ring > i { border-color: rgba(255, 255, 255, .38
 }
 .sl-floor {
   position: absolute;
-  left: 22%;
+  /* Follows the figure. It is the ground the figure stands on, so when the
+     figure moved right to clear the headline this had to move with it, or it
+     is just a glow on empty floor. */
+  left: 35%;
   bottom: -7%;
   width: 34%;
   height: 24%;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(ellipse at 50% 100%, rgba(245, 130, 31, .24), rgba(245, 130, 31, .05) 46%, transparent 72%);
+  /* Was rgba(245,130,31,.24): a warm pool of light on the floor under the
+     figure. With the old duotone portrait it read as a lamp; under a
+     full-colour cutout it just looked like an amber stain bleeding out from
+     under him, and it was the first thing anyone noticed on the page.
+     Neutralised to a cool lift that separates him from the panel without
+     colouring it. */
+  background: radial-gradient(ellipse at 50% 100%, rgba(120, 160, 220, .10), rgba(120, 160, 220, .03) 46%, transparent 72%);
 }
 
 /* The modular block that gives the page its architecture. */
@@ -3211,7 +3310,10 @@ html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
   width: 128%;
   height: 62%;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at 50% 100%, rgba(245, 130, 31, .17), rgba(245, 130, 31, .05) 42%, transparent 70%);
+  /* Same reasoning as .sl-floor: the orange halo behind him was reading as a
+     glow coming off his shoulders. Cooled and weakened so it only lifts him
+     off the panel. */
+  background: radial-gradient(ellipse at 50% 100%, rgba(120, 160, 220, .09), rgba(120, 160, 220, .03) 42%, transparent 70%);
   pointer-events: none;
   z-index: -1;
 }
@@ -3720,9 +3822,12 @@ html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
     margin: 0 -46px;
   }
 
-  /* Pulled left so it sits against the type it overlaps rather than stranding
-     a band of empty ground between them. */
-  .sl-figure { left: 21.5%; }
+  /* Moved right so the claim is READABLE. At 21.5% his face landed across
+     "BUILT BY AN" and "OPERATOR." -- the headline is meant to pass behind his
+     shoulder, not have its letters hidden by his jaw.
+     NOTE: two earlier `.sl-figure { left: ... }` rules exist above and are both
+     overridden by this one. Change it here, or nothing moves. */
+  .sl-figure { left: 27%; }
 
   /* Wider, and held off the page edge by the same margin as the text column on
      the other side, so the two sides of the page balance. */
@@ -3775,5 +3880,8 @@ html[data-boot='deep']::-webkit-scrollbar-track { background: transparent; }
    pair only agreed at a single screen size. */
 @media (min-width: 821px) {
   .sl-ledger { left: 47%; }
-  .sl-figure { max-width: calc(25.5vw - 70px); }
+  /* Narrowed from 25.5vw with the move right: clearing the headline needed
+     about 100px of shift and there were only about 100px of gutter to the
+     credentials card, so he had to lose a little width to gain the room. */
+  .sl-figure { max-width: calc(23vw - 70px); }
 }
