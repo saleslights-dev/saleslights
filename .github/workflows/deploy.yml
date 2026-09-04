@@ -1,0 +1,118 @@
+name: Deploy
+
+# The site was deployed by hand until now: someone had to SSH in and remember to
+# run the script, which meant a push could sit built-but-not-live indefinitely.
+# This runs the SAME script the box already has -- it does not reimplement the
+# deploy, because that script is what owns the build, the atomic swap and the
+# rollback, and two copies of that logic would drift.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit to deploy. Blank = latest main. Pass an older commit to roll back by rebuild.'
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  # A constant string, never keyed on github.ref: a workflow_dispatch rollback
+  # and a push to main resolve to different refs, and a ref-keyed group would
+  # let both run at once against the same directory, racing the same mv.
+  group: deploy-saleslights-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://saleslights.com
+    permissions:
+      contents: read
+
+    steps:
+      # known_hosts rather than a fingerprint input: it pins every host key the
+      # server offers, ssh itself is what verifies it, and it can be read when it
+      # breaks. StrictHostKeyChecking stays on -- this is pinning, not bypassing.
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          echo "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          cat >> ~/.ssh/config <<EOF
+          Host prod
+            HostName ${{ secrets.VPS_HOST }}
+            User ${{ secrets.VPS_USER }}
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            ServerAliveInterval 30
+          EOF
+          chmod 600 ~/.ssh/config
+          # Retried: this box takes a constant stream of SSH brute-force traffic,
+          # and sshd drops new connections once its unauthenticated queue fills.
+          # A dropped connection presents as a timeout, which is what made the
+          # sister project's deploys fail at random before this was understood.
+          for i in 1 2 3; do
+            if ssh -o BatchMode=yes -o ConnectTimeout=20 prod 'echo connected to $(hostname)'; then
+              exit 0
+            fi
+            echo "attempt $i failed; retrying in 15s"
+            sleep 15
+          done
+          echo "could not reach the host after 3 attempts" >&2
+          exit 1
+
+      - name: Build and swap on the VPS
+        id: deploy
+        env:
+          DEPLOY_SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes prod "DEPLOY_SHA='${DEPLOY_SHA:-}' bash -s" <<'REMOTE'
+          set -euo pipefail
+          /root/deploy-saleslights-site.sh "${DEPLOY_SHA:-}"
+          REMOTE
+
+      # The script already asserts this from inside the box. This repeats it from
+      # OUTSIDE over real DNS, TLS and Apache, which is the only way to catch
+      # "the files are correct but the public path is not".
+      #
+      # Deliberately does NOT roll back. If the box is healthy and the public URL
+      # is not, the fault is DNS or the vhost; reverting the build cannot fix that
+      # and would add a second outage to the first.
+      - name: Verify the live site from outside the box
+        run: |
+          set -euo pipefail
+          for url in https://saleslights.com/ https://www.saleslights.com/; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url")
+            echo "$url -> $code"
+            [ "$code" = "200" ] || { echo "expected 200" >&2; exit 1; }
+          done
+          # Assert on the artifact, not just the status code: a stale or
+          # half-swapped directory still answers 200.
+          curl -sS --max-time 30 https://saleslights.com/ | grep -q 'Saleslights' \
+            || { echo "page did not contain the wordmark" >&2; exit 1; }
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Deploy ${{ job.status }}"
+            echo ""
+            echo "- ref: \`${{ inputs.sha || github.sha }}\`"
+            echo "- actor: @${{ github.actor }}"
+            echo "- rollback: re-run this workflow with \`sha\` set to the last good commit"
+          } >> "$GITHUB_STEP_SUMMARY"
